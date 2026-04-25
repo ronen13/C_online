@@ -46,7 +46,6 @@
         align-items: center;
         gap: 0.5rem;
     }
-
     .section-title {
         display: flex;
         align-items: center;
@@ -55,7 +54,6 @@
         font-weight: 900;
         margin: 2rem 0 1rem;
     }
-
     .q-card {
         background: var(--white);
         border: 1px solid var(--border);
@@ -63,13 +61,9 @@
         padding: 1.5rem;
         margin-bottom: 1rem;
     }
-
     .q-num { font-size: 0.75rem; color: var(--muted); font-weight: 700; margin-bottom: 0.4rem; }
-
     .q-text { font-size: 1rem; font-weight: 500; margin-bottom: 1rem; line-height: 1.5; }
-
     .options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-
     .option {
         padding: 0.6rem 0.85rem;
         border-radius: 8px;
@@ -80,20 +74,9 @@
         align-items: flex-start;
         line-height: 1.4;
     }
-
-    .option-key {
-        font-weight: 700;
-        min-width: 18px;
-        color: var(--muted);
-    }
-
-    .option.correct {
-        border-color: #16a34a;
-        background: #f0fdf4;
-    }
-
+    .option-key { font-weight: 700; min-width: 18px; color: var(--muted); }
+    .option.correct { border-color: #16a34a; background: #f0fdf4; }
     .option.correct .option-key { color: #16a34a; }
-
     .explanation {
         margin-top: 1rem;
         padding: 0.75rem 1rem;
@@ -104,11 +87,6 @@
         color: #1e3a5f;
         line-height: 1.5;
     }
-
-    .locked-overlay {
-        position: relative;
-        margin-top: 0.75rem;
-    }
     .locked-msg {
         background: #f8f8f6;
         border: 1.5px dashed var(--border);
@@ -117,6 +95,7 @@
         font-size: 0.8rem;
         color: var(--muted);
         text-align: center;
+        margin-top: 0.75rem;
     }
 </style>
 
@@ -155,15 +134,19 @@
 </div>
 
 <div class="container">
-    @foreach (var (section, questions, emoji, color) in new[] {
-        ("קל", Model.EasyQuestions, "🟢", "easy"),
-        ("בינוני", Model.MediumQuestions, "🟡", "medium"),
-        ("קשה", Model.HardQuestions, "🔴", "hard")
-    })
+    @{
+        var sections = new[]
+        {
+            ("קל",     Model.EasyQuestions,   "🟢", "easy"),
+            ("בינוני", Model.MediumQuestions, "🟡", "medium"),
+            ("קשה",    Model.HardQuestions,   "🔴", "hard")
+        };
+    }
+    @foreach (var (label, questions, emoji, cssClass) in sections)
     {
         <div class="section-title">
-            @emoji <span>שאלות @section</span>
-            <span class="badge badge-@color">@questions.Count שאלות</span>
+            @emoji <span>שאלות @label</span>
+            <span class="badge badge-@cssClass">@questions.Count שאלות</span>
         </div>
 
         @for (int i = 0; i < questions.Count; i++)
@@ -173,12 +156,12 @@
                 <div class="q-num">שאלה @(i + 1) · @q.Topic</div>
                 <div class="q-text">@q.Text</div>
                 <div class="options">
-                    @foreach (var (letter, text) in new[] { ("A", q.OptionA), ("B", q.OptionB), ("C", q.OptionC), ("D", q.OptionD) })
+                    @foreach (var opt in new[] { ("A", q.OptionA), ("B", q.OptionB), ("C", q.OptionC), ("D", q.OptionD) })
                     {
-                        var isCorrect = Model.AnswersAvailable && q.CorrectAnswer == letter;
+                        var isCorrect = Model.AnswersAvailable && q.CorrectAnswer == opt.Item1;
                         <div class="option @(isCorrect ? "correct" : "")">
-                            <span class="option-key">@letter.</span>
-                            <span>@text</span>
+                            <span class="option-key">@opt.Item1.</span>
+                            <span>@opt.Item2</span>
                         </div>
                     }
                 </div>
@@ -188,9 +171,7 @@
                 }
                 else
                 {
-                    <div class="locked-overlay">
-                        <div class="locked-msg">🔒 התשובה וההסבר ייפתחו לאחר 48 שעות מרגע ההרשמה</div>
-                    </div>
+                    <div class="locked-msg">🔒 התשובה וההסבר ייפתחו לאחר 48 שעות מרגע ההרשמה</div>
                 }
             </div>
         }
@@ -199,8 +180,9 @@
 
 @if (!Model.AnswersAvailable && answersAt.HasValue)
 {
+    var targetIso = answersAt.Value.ToString("o");
     <script>
-        var target = new Date('@answersAt.Value.ToString("o")');
+        var target = new Date('@targetIso');
         function tick() {
             var diff = target - new Date();
             if (diff <= 0) { location.reload(); return; }
