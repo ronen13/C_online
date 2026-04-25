@@ -1,0 +1,61 @@
+@model QuizSystem.Models.RegisterViewModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "הרשמה";
+}
+<style>
+    .auth-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 1rem;
+    }
+    .auth-box {
+        width: 100%;
+        max-width: 420px;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 2.5rem;
+    }
+    .auth-box h1 {
+        font-size: 1.75rem;
+        font-weight: 900;
+        margin-bottom: 0.4rem;
+    }
+    .auth-box p { color: var(--muted); margin-bottom: 1.75rem; font-size: 0.95rem; }
+    .auth-link { text-align: center; margin-top: 1.25rem; font-size: 0.9rem; color: var(--muted); }
+    .auth-link a { color: var(--accent2); }
+</style>
+
+<div class="auth-wrap">
+    <div class="auth-box">
+        <h1>הרשמה</h1>
+        <p>צור חשבון כדי להתחיל ליצור שאלות</p>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-error">@ViewBag.Error</div>
+        }
+
+        <form method="post">
+            <div class="form-group">
+                <label>שם מלא</label>
+                <input type="text" name="Name" placeholder="ישראל ישראלי" required />
+            </div>
+            <div class="form-group">
+                <label>כתובת אימייל</label>
+                <input type="email" name="Email" placeholder="email@example.com" required />
+            </div>
+            <div class="form-group">
+                <label>סיסמה</label>
+                <input type="password" name="Password" placeholder="לפחות 6 תווים" required minlength="6" />
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%">יצירת חשבון ←</button>
+        </form>
+
+        <div class="auth-link">
+            יש לך חשבון? <a href="/Auth/Login">התחברות</a>
+        </div>
+    </div>
+</div>

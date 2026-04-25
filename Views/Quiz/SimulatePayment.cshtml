@@ -1,0 +1,62 @@
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "תשלום";
+    var session = ViewBag.Session as QuizSystem.Models.QuizSession;
+}
+<style>
+    .payment-wrap { max-width: 480px; margin: 4rem auto; padding: 0 1rem; text-align: center; }
+    .payment-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 2.5rem;
+    }
+    .payment-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .payment-card h1 { font-size: 1.5rem; font-weight: 900; margin-bottom: 0.5rem; }
+    .payment-card p { color: var(--muted); margin-bottom: 1.5rem; }
+    .order-details {
+        background: var(--paper);
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        text-align: right;
+        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+    }
+    .order-row { display: flex; justify-content: space-between; padding: 0.3rem 0; }
+    .order-row.total { font-weight: 700; border-top: 1px solid var(--border); margin-top: 0.5rem; padding-top: 0.75rem; }
+    .demo-note {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1e40af;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.8rem;
+        margin-bottom: 1.5rem;
+        text-align: right;
+    }
+</style>
+
+<div class="payment-wrap">
+    <div class="payment-card">
+        <div class="payment-icon">💳</div>
+        <h1>השלמת תשלום</h1>
+        <p>בחן על: @session?.Topics</p>
+
+        <div class="demo-note">
+            ℹ️ <strong>מצב הדגמה:</strong> לאחר חיבור שירות תשלום אמיתי (כמו Tranzila), המשתמש יועבר אליו. כאן מדמים אישור תשלום.
+        </div>
+
+        <div class="order-details">
+            <div class="order-row"><span>יצירת שאלות</span><span>₪49</span></div>
+            <div class="order-row"><span>מע"מ 17%</span><span>₪8.33</span></div>
+            <div class="order-row total"><span>סה"כ לתשלום</span><span>₪57.33</span></div>
+        </div>
+
+        <form method="post" action="/Quiz/ConfirmPayment">
+            <input type="hidden" name="id" value="@session?.Id" />
+            <button type="submit" class="btn btn-primary" style="width:100%; font-size:1rem; padding:0.9rem;">
+                אשר תשלום ← (הדגמה)
+            </button>
+        </form>
+    </div>
+</div>

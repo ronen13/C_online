@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - QuizGen AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --ink: #0f0e0d;
+            --paper: #f5f2ee;
+            --cream: #ede9e3;
+            --accent: #c8451a;
+            --accent2: #1a6bc8;
+            --muted: #7a756e;
+            --border: #d4cfc8;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            min-height: 100vh;
+            direction: rtl;
+        }
+
+        nav {
+            background: var(--ink);
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-logo {
+            font-size: 1.25rem;
+            font-weight: 900;
+            color: var(--white);
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-logo span { color: var(--accent); }
+
+        .nav-links { display: flex; gap: 0.25rem; align-items: center; }
+
+        .nav-links a {
+            color: #aaa;
+            text-decoration: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.15s;
+        }
+
+        .nav-links a:hover { color: var(--white); background: rgba(255,255,255,0.08); }
+
+        .nav-links .btn-nav {
+            background: var(--accent);
+            color: var(--white);
+            font-weight: 500;
+        }
+
+        .nav-links .btn-nav:hover { background: #b33d16; }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.65rem 1.5rem;
+            border-radius: 8px;
+            font-family: 'Heebo', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 2px solid transparent;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--white);
+        }
+
+        .btn-primary:hover { background: #b33d16; transform: translateY(-1px); }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--ink);
+            border-color: var(--border);
+        }
+
+        .btn-secondary:hover { border-color: var(--ink); }
+
+        .btn-blue {
+            background: var(--accent2);
+            color: var(--white);
+        }
+
+        .btn-blue:hover { background: #155aaa; transform: translateY(-1px); }
+
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group { margin-bottom: 1.25rem; }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.4rem;
+            color: var(--muted);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.65rem 0.9rem;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Heebo', sans-serif;
+            font-size: 1rem;
+            background: var(--paper);
+            color: var(--ink);
+            transition: border-color 0.15s;
+            direction: rtl;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent2);
+            background: var(--white);
+        }
+
+        .alert {
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .alert-error { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+        .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .badge-easy { background: #dcfce7; color: #166534; }
+        .badge-medium { background: #fef9c3; color: #854d0e; }
+        .badge-hard { background: #fee2e2; color: #991b1b; }
+        .badge-ready { background: #dcfce7; color: #166534; }
+        .badge-generating { background: #fef9c3; color: #854d0e; }
+        .badge-pending { background: #f1f5f9; color: #475569; }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+<nav>
+    <a href="/" class="nav-logo">Quiz<span>Gen</span> AI</a>
+    <div class="nav-links">
+        @if (Context.Session.GetInt32("UserId") != null)
+        {
+            <a href="/Quiz/MySessions">הבחנים שלי</a>
+            <a href="/Quiz/Create" class="btn-nav">+ בחן חדש</a>
+            <a href="/Auth/Logout">התנתקות</a>
+        }
+        else
+        {
+            <a href="/Auth/Login">התחברות</a>
+            <a href="/Auth/Register" class="btn-nav">הרשמה</a>
+        }
+    </div>
+</nav>
+
+<main>
+    @RenderBody()
+</main>
+
+<footer>
+    © @DateTime.Now.Year QuizGen AI — מערכת יצירת שאלות חכמה
+</footer>
+
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,89 @@
+@model List<QuizSystem.Models.QuizSession>
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "הבחנים שלי";
+}
+<style>
+    .sessions-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+    }
+    .sessions-header h1 { font-size: 1.75rem; font-weight: 900; }
+    .session-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        text-decoration: none;
+        color: inherit;
+        transition: border-color 0.15s, transform 0.1s;
+    }
+    .session-card:hover { border-color: #aaa; transform: translateX(-2px); }
+    .session-topics { font-weight: 700; font-size: 1rem; margin-bottom: 0.25rem; }
+    .session-meta { font-size: 0.8rem; color: var(--muted); }
+    .session-right { text-align: left; display: flex; flex-direction: column; align-items: flex-end; gap: 0.4rem; }
+    .empty-state {
+        text-align: center;
+        padding: 4rem 1rem;
+        color: var(--muted);
+    }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+    .empty-state h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--ink); }
+</style>
+
+<div class="container">
+    <div class="sessions-header">
+        <h1>הבחנים שלי</h1>
+        <a href="/Quiz/Create" class="btn btn-primary">+ בחן חדש</a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <div class="icon">📭</div>
+            <h2>אין לך בחנים עדיין</h2>
+            <p style="margin-bottom:1.5rem">צור בחן חדש — הכנס נושאים וקבל שאלות מיידית</p>
+            <a href="/Quiz/Create" class="btn btn-primary">יצירת בחן ראשון</a>
+        </div>
+    }
+    else
+    {
+        @foreach (var session in Model)
+        {
+            var now = DateTime.UtcNow;
+            var answersOpen = session.AnswersAvailableAt.HasValue && now >= session.AnswersAvailableAt.Value;
+            var statusBadge = session.Status switch
+            {
+                "ready" when answersOpen => ("badge-ready", "✅ תשובות פתוחות"),
+                "ready" => ("badge-generating", "⏳ ממתין 48 שעות"),
+                "generating" => ("badge-generating", "⚙️ מייצר..."),
+                _ => ("badge-pending", "💳 ממתין לתשלום")
+            };
+
+            <a href="/Quiz/View/@session.Id" class="session-card">
+                <div>
+                    <div class="session-topics">
+                        @(session.Topics.Length > 60 ? session.Topics[..60] + "..." : session.Topics)
+                    </div>
+                    <div class="session-meta">
+                        @session.CreatedAt.ToString("dd/MM/yyyy") ·
+                        @session.Questions.Count שאלות
+                        @if (session.AnswersAvailableAt.HasValue && !answersOpen)
+                        {
+                            <span> · תשובות: @session.AnswersAvailableAt.Value.ToString("dd/MM HH:mm")</span>
+                        }
+                    </div>
+                </div>
+                <div class="session-right">
+                    <span class="badge @statusBadge.Item1">@statusBadge.Item2</span>
+                </div>
+            </a>
+        }
+    }
+</div>

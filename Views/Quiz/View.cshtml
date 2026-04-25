@@ -1,0 +1,216 @@
+@model QuizSystem.Models.QuizResultViewModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "בחן";
+    var answersAt = Model.Session.AnswersAvailableAt;
+}
+<style>
+    .quiz-header {
+        background: var(--ink);
+        padding: 2.5rem 1.5rem;
+        color: var(--white);
+    }
+    .quiz-header-inner { max-width: 960px; margin: 0 auto; }
+    .quiz-header h1 { font-size: 1.75rem; font-weight: 900; margin-bottom: 0.3rem; }
+    .quiz-meta { color: #888; font-size: 0.85rem; margin-bottom: 1rem; }
+    .topics-tag {
+        display: inline-block;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: #ddd;
+        border-radius: 20px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.8rem;
+        margin: 0.2rem;
+    }
+    .countdown-box {
+        background: #1a0a00;
+        border: 1px solid var(--accent);
+        border-radius: 10px;
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        max-width: 500px;
+    }
+    .countdown-box .label { color: #aaa; font-size: 0.85rem; }
+    .countdown-timer { font-size: 1.5rem; font-weight: 900; color: var(--accent); font-variant-numeric: tabular-nums; }
+    .answers-unlocked {
+        background: #0d2b14;
+        border: 1px solid #16a34a;
+        border-radius: 10px;
+        padding: 1rem 1.5rem;
+        color: #4ade80;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.15rem;
+        font-weight: 900;
+        margin: 2rem 0 1rem;
+    }
+
+    .q-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .q-num { font-size: 0.75rem; color: var(--muted); font-weight: 700; margin-bottom: 0.4rem; }
+
+    .q-text { font-size: 1rem; font-weight: 500; margin-bottom: 1rem; line-height: 1.5; }
+
+    .options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+
+    .option {
+        padding: 0.6rem 0.85rem;
+        border-radius: 8px;
+        border: 1.5px solid var(--border);
+        font-size: 0.875rem;
+        display: flex;
+        gap: 0.5rem;
+        align-items: flex-start;
+        line-height: 1.4;
+    }
+
+    .option-key {
+        font-weight: 700;
+        min-width: 18px;
+        color: var(--muted);
+    }
+
+    .option.correct {
+        border-color: #16a34a;
+        background: #f0fdf4;
+    }
+
+    .option.correct .option-key { color: #16a34a; }
+
+    .explanation {
+        margin-top: 1rem;
+        padding: 0.75rem 1rem;
+        background: #eff6ff;
+        border-right: 3px solid var(--accent2);
+        border-radius: 0 8px 8px 0;
+        font-size: 0.875rem;
+        color: #1e3a5f;
+        line-height: 1.5;
+    }
+
+    .locked-overlay {
+        position: relative;
+        margin-top: 0.75rem;
+    }
+    .locked-msg {
+        background: #f8f8f6;
+        border: 1.5px dashed var(--border);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.8rem;
+        color: var(--muted);
+        text-align: center;
+    }
+</style>
+
+<div class="quiz-header">
+    <div class="quiz-header-inner">
+        <h1>📝 @(Model.Session.Topics.Length > 50 ? Model.Session.Topics[..50] + "..." : Model.Session.Topics)</h1>
+        <div class="quiz-meta">
+            נוצר: @Model.Session.CreatedAt.ToString("dd/MM/yyyy HH:mm") ·
+            @(Model.EasyQuestions.Count + Model.MediumQuestions.Count + Model.HardQuestions.Count) שאלות
+        </div>
+        <div>
+            @foreach (var t in Model.Session.Topics.Split(','))
+            {
+                <span class="topics-tag">@t.Trim()</span>
+            }
+        </div>
+        <div style="margin-top:1.25rem">
+            @if (Model.AnswersAvailable)
+            {
+                <div class="answers-unlocked">✅ התשובות פתוחות! ניתן לראות את כל התשובות וההסברים</div>
+            }
+            else if (answersAt.HasValue)
+            {
+                <div class="countdown-box">
+                    <div>
+                        <div class="label">התשובות ייפתחו בעוד</div>
+                        <div class="countdown-timer" id="timer">--:--:--</div>
+                    </div>
+                    <div style="font-size:0.8rem;color:#666;max-width:160px;line-height:1.5">
+                        @answersAt.Value.ToString("dd/MM/yyyy") בשעה @answersAt.Value.ToString("HH:mm")
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    @foreach (var (section, questions, emoji, color) in new[] {
+        ("קל", Model.EasyQuestions, "🟢", "easy"),
+        ("בינוני", Model.MediumQuestions, "🟡", "medium"),
+        ("קשה", Model.HardQuestions, "🔴", "hard")
+    })
+    {
+        <div class="section-title">
+            @emoji <span>שאלות @section</span>
+            <span class="badge badge-@color">@questions.Count שאלות</span>
+        </div>
+
+        @for (int i = 0; i < questions.Count; i++)
+        {
+            var q = questions[i];
+            <div class="q-card">
+                <div class="q-num">שאלה @(i + 1) · @q.Topic</div>
+                <div class="q-text">@q.Text</div>
+                <div class="options">
+                    @foreach (var (letter, text) in new[] { ("A", q.OptionA), ("B", q.OptionB), ("C", q.OptionC), ("D", q.OptionD) })
+                    {
+                        var isCorrect = Model.AnswersAvailable && q.CorrectAnswer == letter;
+                        <div class="option @(isCorrect ? "correct" : "")">
+                            <span class="option-key">@letter.</span>
+                            <span>@text</span>
+                        </div>
+                    }
+                </div>
+                @if (Model.AnswersAvailable)
+                {
+                    <div class="explanation">💡 @q.Explanation</div>
+                }
+                else
+                {
+                    <div class="locked-overlay">
+                        <div class="locked-msg">🔒 התשובה וההסבר ייפתחו לאחר 48 שעות מרגע ההרשמה</div>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+@if (!Model.AnswersAvailable && answersAt.HasValue)
+{
+    <script>
+        var target = new Date('@answersAt.Value.ToString("o")');
+        function tick() {
+            var diff = target - new Date();
+            if (diff <= 0) { location.reload(); return; }
+            var h = Math.floor(diff / 3600000);
+            var m = Math.floor((diff % 3600000) / 60000);
+            var s = Math.floor((diff % 60000) / 1000);
+            document.getElementById('timer').textContent =
+                String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+        }
+        tick();
+        setInterval(tick, 1000);
+    </script>
+}

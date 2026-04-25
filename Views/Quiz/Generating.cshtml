@@ -1,0 +1,71 @@
+@model QuizSystem.Models.QuizSession
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "מייצר שאלות...";
+}
+<style>
+    .gen-wrap { max-width: 500px; margin: 5rem auto; padding: 0 1rem; text-align: center; }
+    .spinner {
+        width: 56px; height: 56px;
+        border: 4px solid var(--border);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 0.9s linear infinite;
+        margin: 0 auto 1.5rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .gen-wrap h1 { font-size: 1.5rem; font-weight: 900; margin-bottom: 0.5rem; }
+    .gen-wrap p { color: var(--muted); font-size: 0.95rem; }
+    .steps {
+        text-align: right;
+        margin: 2rem auto;
+        max-width: 320px;
+    }
+    .step {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.6rem 0;
+        font-size: 0.9rem;
+        color: var(--muted);
+        border-bottom: 1px solid var(--border);
+    }
+    .step:last-child { border-bottom: none; }
+    .step .dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: var(--border);
+        flex-shrink: 0;
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity:0.4; } 50% { opacity:1; } }
+</style>
+
+<div class="gen-wrap">
+    <div class="spinner"></div>
+    <h1>מייצר שאלות בשבילך...</h1>
+    <p>Claude AI בונה שאלות ברמות קל, בינוני וקשה עבור: <strong>@Model.Topics</strong></p>
+
+    <div class="steps">
+        <div class="step"><div class="dot" style="animation-delay:0s;background:var(--accent)"></div>נושאים התקבלו ✓</div>
+        <div class="step"><div class="dot" style="animation-delay:0.3s;background:var(--accent)"></div>תשלום אושר ✓</div>
+        <div class="step"><div class="dot" style="animation-delay:0.6s"></div>מייצר שאלות קלות...</div>
+        <div class="step"><div class="dot" style="animation-delay:0.9s"></div>מייצר שאלות בינוניות...</div>
+        <div class="step"><div class="dot" style="animation-delay:1.2s"></div>מייצר שאלות קשות...</div>
+    </div>
+
+    <p style="font-size:0.8rem;color:var(--muted)">הדף יתרענן אוטומטית...</p>
+</div>
+
+<script>
+    function checkStatus() {
+        fetch('/Quiz/Status/@Model.Id')
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'ready') {
+                    window.location.href = '/Quiz/View/@Model.Id';
+                }
+            });
+    }
+    setInterval(checkStatus, 3000);
+</script>

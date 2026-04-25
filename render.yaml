@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: quizgen-ai
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: Claude__ApiKey
+        sync: false          # הגדר ידנית בלוח הבקרה של Render
+      - key: Payment__Url
+        value: https://meshulam.co.il/quick_payment?b=94e3eb6d1865b2f42bef52f9966512df
+    disk:
+      name: quiz-data
+      mountPath: /data
+      sizeGB: 1
