@@ -8,77 +8,147 @@
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        :root {
-            --green-pale:  #e8f5ec;
-            --green-bg:    #c8ebd4;
-            --green-mid:   #52b788;
-            --green-dark:  #2d6a4f;
-            --green-deep:  #1b4332;
-            --teal:        #3a8c7e;
-            --teal-light:  #b7e4c7;
-            --text-main:   #1b3a2d;
-            --text-muted:  #4a7c5e;
-            --border:      #a8d5b5;
-            --white:       #ffffff;
-        }
-        body { font-family:'Heebo',sans-serif; background:var(--green-pale); color:var(--text-main); min-height:100vh; direction:rtl; }
 
+        :root {
+            --bg-main:     #b7e4c7;
+            --bg-pale:     #d8f3e3;
+            --bg-light:    #e8f8ef;
+            --teal:        #3a8c7e;
+            --teal-dark:   #2c6e63;
+            --green-logo:  #4a8c5c;
+            --green-dark:  #2d5a3d;
+            --green-deep:  #1b3a2d;
+            --text-main:   #1b3a2d;
+            --text-muted:  #4a7060;
+            --border:      #8ecfaa;
+            --white:       #ffffff;
+            --card-bg:     #f0fdf6;
+        }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: var(--bg-pale);
+            color: var(--text-main);
+            min-height: 100vh;
+            direction: rtl;
+        }
+
+        /* ── NAV ── */
         nav {
             background: var(--green-deep);
             padding: 0 2rem;
-            display: flex; align-items: center; justify-content: space-between;
-            height: 64px; position: sticky; top: 0; z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 68px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
             border-bottom: 2px solid var(--teal);
         }
-        .nav-logo { display:flex; align-items:center; gap:0.6rem; text-decoration:none; }
-        .nav-logo-icon { width:36px; height:36px; background:var(--teal); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:0.85rem; color:var(--white); font-weight:900; font-family:monospace; }
-        .nav-logo-text { font-size:1.1rem; font-weight:900; color:var(--white); }
-        .nav-logo-text span { color:var(--teal-light); }
-        .nav-links { display:flex; gap:0.25rem; align-items:center; }
-        .nav-links a { color:#a8d5b5; text-decoration:none; padding:0.4rem 0.9rem; border-radius:6px; font-size:0.875rem; transition:all 0.15s; }
-        .nav-links a:hover { color:var(--white); background:rgba(255,255,255,0.1); }
-        .nav-links .btn-nav { background:var(--teal); color:var(--white); font-weight:500; }
-        .nav-links .btn-nav:hover { background:var(--teal-dark,#2c6e63); }
 
-        .container { max-width:960px; margin:0 auto; padding:2rem 1.5rem; }
-
-        .btn { display:inline-block; padding:0.65rem 1.5rem; border-radius:8px; font-family:'Heebo',sans-serif; font-size:0.95rem; font-weight:500; cursor:pointer; border:2px solid transparent; text-decoration:none; transition:all 0.15s; }
-        .btn-primary { background:var(--teal); color:var(--white); }
-        .btn-primary:hover { background:#2c6e63; transform:translateY(-1px); }
-        .btn-secondary { background:transparent; color:var(--green-dark); border-color:var(--border); }
-        .btn-secondary:hover { border-color:var(--green-dark); }
-
-        .card { background:var(--white); border-radius:12px; border:1px solid var(--border); padding:2rem; margin-bottom:1.5rem; }
-
-        .form-group { margin-bottom:1.25rem; }
-        .form-group label { display:block; font-size:0.875rem; font-weight:500; margin-bottom:0.4rem; color:var(--text-muted); }
-        .form-group input, .form-group textarea, .form-group select {
-            width:100%; padding:0.65rem 0.9rem; border:1.5px solid var(--border);
-            border-radius:8px; font-family:'Heebo',sans-serif; font-size:1rem;
-            background:var(--green-pale); color:var(--text-main); transition:border-color 0.15s; direction:rtl;
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
         }
-        .form-group input:focus, .form-group textarea:focus { outline:none; border-color:var(--teal); background:var(--white); }
 
-        .alert { padding:0.8rem 1rem; border-radius:8px; margin-bottom:1rem; font-size:0.9rem; }
-        .alert-error { background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; }
-        .alert-success { background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; }
+        .nav-logo img {
+            height: 44px;
+            width: auto;
+            filter: brightness(0) invert(1);
+            opacity: 0.92;
+        }
 
-        .badge { display:inline-block; padding:0.2rem 0.6rem; border-radius:20px; font-size:0.75rem; font-weight:700; }
-        .badge-easy { background:#dcfce7; color:#166534; }
-        .badge-medium { background:#fef9c3; color:#854d0e; }
-        .badge-hard { background:#fee2e2; color:#991b1b; }
-        .badge-ready { background:#dcfce7; color:#166534; }
-        .badge-generating { background:#fef9c3; color:#854d0e; }
-        .badge-pending { background:#f1f5f9; color:#475569; }
+        .nav-links { display: flex; gap: 0.2rem; align-items: center; }
+        .nav-links a {
+            color: #a8d5b5;
+            text-decoration: none;
+            padding: 0.45rem 0.9rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            transition: all 0.15s;
+        }
+        .nav-links a:hover { color: var(--white); background: rgba(255,255,255,0.1); }
+        .nav-links .btn-nav {
+            background: var(--teal);
+            color: var(--white);
+            font-weight: 600;
+        }
+        .nav-links .btn-nav:hover { background: var(--teal-dark); }
 
-        footer { text-align:center; padding:2rem; margin-top:4rem; border-top:1px solid var(--border); color:var(--text-muted); font-size:0.85rem; }
+        /* ── LAYOUT ── */
+        .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+        /* ── BUTTONS ── */
+        .btn {
+            display: inline-block;
+            padding: 0.65rem 1.5rem;
+            border-radius: 8px;
+            font-family: 'Heebo', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 2px solid transparent;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+        .btn-primary { background: var(--teal); color: var(--white); }
+        .btn-primary:hover { background: var(--teal-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(58,140,126,0.3); }
+        .btn-secondary { background: transparent; color: var(--green-dark); border-color: var(--border); }
+        .btn-secondary:hover { border-color: var(--teal); color: var(--teal); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* ── CARD ── */
+        .card { background: var(--white); border-radius: 12px; border: 1px solid var(--border); padding: 2rem; margin-bottom: 1.5rem; }
+
+        /* ── FORMS ── */
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-muted); }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 0.65rem 0.9rem;
+            border: 1.5px solid var(--border); border-radius: 8px;
+            font-family: 'Heebo', sans-serif; font-size: 1rem;
+            background: var(--bg-light); color: var(--text-main);
+            transition: border-color 0.15s; direction: rtl;
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none; border-color: var(--teal); background: var(--white);
+        }
+
+        /* ── ALERTS ── */
+        .alert { padding: 0.8rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem; }
+        .alert-error { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+        .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+
+        /* ── BADGES ── */
+        .badge { display: inline-block; padding: 0.2rem 0.65rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+        .badge-easy     { background: #dcfce7; color: #166534; }
+        .badge-medium   { background: #fef9c3; color: #854d0e; }
+        .badge-hard     { background: #fee2e2; color: #991b1b; }
+        .badge-ready    { background: #dcfce7; color: #166534; }
+        .badge-generating { background: #fef9c3; color: #854d0e; }
+        .badge-pending  { background: #f1f5f9; color: #475569; }
+
+        /* ── FOOTER ── */
+        footer {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            margin-top: 4rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            background: var(--bg-pale);
+        }
+        footer img { height: 32px; opacity: 0.7; margin-bottom: 0.5rem; display: block; margin: 0 auto 0.5rem; }
     </style>
 </head>
 <body>
+
 <nav>
     <a href="/" class="nav-logo">
-        <div class="nav-logo-icon">&lt;/&gt;</div>
-        <div class="nav-logo-text">MarketClab<span>.io</span></div>
+        <img src="/images/logo.png" alt="MarketClab.io" />
     </a>
     <div class="nav-links">
         @if (Context.Session.GetInt32("UserId") != null)
@@ -94,7 +164,13 @@
         }
     </div>
 </nav>
+
 <main>@RenderBody()</main>
-<footer>© @DateTime.Now.Year MarketClab.io — Code. Market. Thrive.</footer>
+
+<footer>
+    <img src="/images/logo.png" alt="MarketClab.io" style="filter:opacity(0.4) sepia(1) hue-rotate(100deg);" />
+    © @DateTime.Now.Year MarketClab.io &mdash; Code. Market. Thrive.
+</footer>
+
 </body>
 </html>

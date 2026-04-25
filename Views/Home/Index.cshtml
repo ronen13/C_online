@@ -3,39 +3,73 @@
     ViewData["Title"] = "דף הבית";
 }
 <style>
-    .hero { text-align:center; padding:5rem 1.5rem 4rem; max-width:700px; margin:0 auto; }
-    .hero-label { display:inline-block; background:var(--green-bg); color:var(--green-dark); border:1px solid var(--border); border-radius:20px; padding:0.3rem 1rem; font-size:0.8rem; font-weight:700; margin-bottom:1.5rem; }
-    .hero h1 { font-size:clamp(2rem,5vw,3.25rem); font-weight:900; line-height:1.1; margin-bottom:1.25rem; letter-spacing:-1px; color:var(--green-deep); }
-    .hero h1 span { color:var(--teal); }
-    .hero p { font-size:1.1rem; color:var(--text-muted); line-height:1.7; margin-bottom:2.5rem; }
-    .hero-cta { display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap; }
+    .hero {
+        text-align: center;
+        padding: 5rem 1.5rem 3.5rem;
+        max-width: 680px;
+        margin: 0 auto;
+    }
+    .hero-logo {
+        width: 140px;
+        margin: 0 auto 2rem;
+        display: block;
+    }
+    .hero h1 {
+        font-size: clamp(2rem, 5vw, 3.25rem);
+        font-weight: 900;
+        line-height: 1.1;
+        margin-bottom: 1.25rem;
+        letter-spacing: -1px;
+        color: var(--green-deep);
+    }
+    .hero h1 span { color: var(--teal); }
+    .hero p { font-size: 1.1rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 2.5rem; }
+    .hero-cta { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
 
-    .features { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1.25rem; padding:0 1.5rem 4rem; max-width:960px; margin:0 auto; }
-    .feature-card { background:var(--white); border:1px solid var(--border); border-radius:12px; padding:1.75rem; }
-    .feature-icon { font-size:2rem; margin-bottom:0.75rem; }
-    .feature-card h3 { font-size:1rem; font-weight:700; margin-bottom:0.5rem; color:var(--green-deep); }
-    .feature-card p { font-size:0.875rem; color:var(--text-muted); line-height:1.6; }
+    /* dark strip */
+    .levels-strip { background: var(--green-deep); padding: 3rem 1.5rem; margin-bottom: 0; }
+    .levels-inner { max-width: 960px; margin: 0 auto; text-align: center; }
+    .levels-inner h2 { color: var(--white); font-size: 1.6rem; font-weight: 900; margin-bottom: 0.4rem; }
+    .levels-sub { color: #8ecfaa; margin-bottom: 2rem; font-size: 0.9rem; }
+    .levels-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; max-width: 520px; margin: 0 auto; }
+    .level-box { border-radius: 10px; padding: 1.4rem 1rem; text-align: center; }
+    .level-easy   { background: #0d2b14; border: 1px solid #1a4a20; }
+    .level-medium { background: #2b2000; border: 1px solid #4a3800; }
+    .level-hard   { background: #2b0a0a; border: 1px solid #4a1010; }
+    .level-box .emoji { font-size: 1.6rem; margin-bottom: 0.4rem; }
+    .level-easy   .lbl { color: #4ade80; font-weight: 700; }
+    .level-medium .lbl { color: #facc15; font-weight: 700; }
+    .level-hard   .lbl { color: #f87171; font-weight: 700; }
+    .level-box p { font-size: 0.78rem; color: #6b9; margin-top: 0.2rem; }
 
-    .levels-strip { background:var(--green-deep); padding:3rem 1.5rem; margin-bottom:4rem; }
-    .levels-inner { max-width:960px; margin:0 auto; text-align:center; }
-    .levels-inner h2 { color:var(--white); font-size:1.75rem; font-weight:900; margin-bottom:0.5rem; }
-    .levels-sub { color:var(--teal-light,#b7e4c7); margin-bottom:2rem; font-size:0.95rem; }
-    .levels-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; max-width:540px; margin:0 auto; }
-    .level-box { border-radius:10px; padding:1.5rem 1rem; text-align:center; }
-    .level-easy   { background:#0d2b14; border:1px solid #1a4a20; }
-    .level-medium { background:#2b2000; border:1px solid #4a3800; }
-    .level-hard   { background:#2b0a0a; border:1px solid #4a1010; }
-    .level-box .emoji { font-size:1.75rem; margin-bottom:0.5rem; }
-    .level-easy   .lbl { color:#4ade80; font-weight:700; }
-    .level-medium .lbl { color:#facc15; font-weight:700; }
-    .level-hard   .lbl { color:#f87171; font-weight:700; }
-    .level-box p { font-size:0.8rem; color:#777; margin-top:0.25rem; }
+    /* features */
+    .features-wrap { background: var(--bg-main); padding: 3.5rem 1.5rem; }
+    .features { display: grid; grid-template-columns: repeat(auto-fit,minmax(210px,1fr)); gap: 1.25rem; max-width: 960px; margin: 0 auto; }
+    .feature-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
+    .feature-icon { font-size: 1.75rem; margin-bottom: 0.65rem; }
+    .feature-card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--green-deep); }
+    .feature-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* csharp topics preview */
+    .topics-preview { background: var(--card-bg); border-top: 1px solid var(--border); padding: 3rem 1.5rem; }
+    .topics-preview-inner { max-width: 960px; margin: 0 auto; }
+    .topics-preview h2 { font-size: 1.4rem; font-weight: 900; color: var(--green-deep); margin-bottom: 1.25rem; text-align: center; }
+    .topic-pills { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+    .topic-pill {
+        background: var(--white);
+        border: 1.5px solid var(--border);
+        color: var(--teal-dark);
+        border-radius: 20px;
+        padding: 0.3rem 0.9rem;
+        font-size: 0.82rem;
+        font-weight: 500;
+    }
 </style>
 
 <div class="hero">
-    <div class="hero-label">✦ C# · .NET · ASP.NET</div>
-    <h1>שאלות בחינה<br><span>בעולם ה-C#</span><br>נבנות עבורך</h1>
-    <p>בחר נושאים מעולם ה-C# ו-.NET — קבל שאלות ב-3 רמות קושי.<br>התשובות מוצגות לאחר 48 שעות.</p>
+    <img src="/images/logo-color.png" alt="MarketClab.io" class="hero-logo" />
+    <h1>שאלות בחינה<br><span>ב-C# ו-.NET</span><br>נבנות עבורך</h1>
+    <p>בחר נושאים מעולם ה-C# — קבל 15 שאלות ב-3 רמות קושי.<br>התשובות מוצגות לאחר 48 שעות.</p>
     <div class="hero-cta">
         <a href="/Auth/Register" class="btn btn-primary">התחל עכשיו ←</a>
         <a href="/Auth/Login" class="btn btn-secondary">יש לי חשבון</a>
@@ -54,9 +88,23 @@
     </div>
 </div>
 
-<div class="features">
-    <div class="feature-card"><div class="feature-icon">⚙️</div><h3>נושאי C# מקיפים</h3><p>OOP, LINQ, async/await, EF Core, ASP.NET, design patterns ועוד</p></div>
-    <div class="feature-card"><div class="feature-icon">⏱️</div><h3>תשובות לאחר 48 שעות</h3><p>מספיק זמן ללמוד לבד לפני שהתשובות נחשפות — מעודד למידה אמיתית</p></div>
-    <div class="feature-card"><div class="feature-icon">🎯</div><h3>בחר נושאים בעצמך</h3><p>סמן בדיוק את הנושאים שרלוונטיים לך, לא חבילה אחת לכולם</p></div>
-    <div class="feature-card"><div class="feature-icon">💡</div><h3>הסברים מפורטים</h3><p>כל תשובה מגיעה עם הסבר מלא שמסביר את העקרון מאחורי הקוד</p></div>
+<div class="features-wrap">
+    <div class="features">
+        <div class="feature-card"><div class="feature-icon">⚙️</div><h3>נושאי C# מקיפים</h3><p>OOP, LINQ, async/await, EF Core, ASP.NET, Design Patterns ועוד</p></div>
+        <div class="feature-card"><div class="feature-icon">⏱️</div><h3>תשובות לאחר 48 שעות</h3><p>מעודד למידה אמיתית — תנסה לפתור לבד לפני שהתשובות נחשפות</p></div>
+        <div class="feature-card"><div class="feature-icon">🎯</div><h3>בחר נושאים בעצמך</h3><p>סמן בדיוק את הנושאים שרלוונטיים לך — לא חבילה אחת לכולם</p></div>
+        <div class="feature-card"><div class="feature-icon">💡</div><h3>הסברים מפורטים</h3><p>כל תשובה מגיעה עם הסבר שמסביר את העקרון מאחורי הקוד</p></div>
+    </div>
+</div>
+
+<div class="topics-preview">
+    <div class="topics-preview-inner">
+        <h2>נושאים זמינים</h2>
+        <div class="topic-pills">
+            @foreach (var t in new[]{"יסודות C#","OOP","Inheritance","Interfaces","LINQ","Generics","async/await","Tasks","Delegates","Events","Lambda","Extension Methods","Pattern Matching","Exception Handling","Entity Framework Core","ASP.NET Core MVC","Web API","Dependency Injection","Middleware","Authentication","SOLID","Design Patterns","Unit Testing","Clean Architecture","Nullable Types","Collections","String Manipulation"})
+            {
+                <span class="topic-pill">@t</span>
+            }
+        </div>
+    </div>
 </div>
