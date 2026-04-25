@@ -16,7 +16,7 @@ public class QuizSession
     public int UserId { get; set; }
     public User User { get; set; } = null!;
     public string Topics { get; set; } = "";
-    public string Status { get; set; } = "pending_payment"; // pending_payment, paid, generating, ready
+    public string Status { get; set; } = "pending_payment";
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? PaidAt { get; set; }
     public DateTime? AnswersAvailableAt { get; set; }
@@ -30,13 +30,13 @@ public class Question
     public int SessionId { get; set; }
     public QuizSession Session { get; set; } = null!;
     public string Topic { get; set; } = "";
-    public string Difficulty { get; set; } = ""; // easy, medium, hard
+    public string Difficulty { get; set; } = "";
     public string Text { get; set; } = "";
     public string OptionA { get; set; } = "";
     public string OptionB { get; set; } = "";
     public string OptionC { get; set; } = "";
     public string OptionD { get; set; } = "";
-    public string CorrectAnswer { get; set; } = ""; // A, B, C, D
+    public string CorrectAnswer { get; set; } = "";
     public string Explanation { get; set; } = "";
 }
 
@@ -55,8 +55,7 @@ public class LoginViewModel
 
 public class CreateQuizViewModel
 {
-    public string Topics { get; set; } = "";
-    public int QuestionsPerDifficulty { get; set; } = 5;
+    public List<string> SelectedTopics { get; set; } = new();
 }
 
 public class QuizResultViewModel

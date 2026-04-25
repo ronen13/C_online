@@ -3,69 +3,165 @@
     ViewData["Title"] = "בחן חדש";
 }
 <style>
-    .create-wrap { max-width: 640px; margin: 3rem auto; padding: 0 1rem; }
-    .create-wrap h1 { font-size: 2rem; font-weight: 900; margin-bottom: 0.4rem; }
-    .create-wrap .sub { color: var(--muted); margin-bottom: 2rem; }
-    .topic-hint { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; }
+    .create-wrap { max-width:700px; margin:2.5rem auto; padding:0 1rem; }
+    .create-wrap h1 { font-size:1.75rem; font-weight:900; color:var(--green-deep); margin-bottom:0.3rem; }
+    .create-wrap .sub { color:var(--text-muted); margin-bottom:2rem; }
+
+    .topics-grid {
+        display:grid;
+        grid-template-columns:repeat(auto-fill, minmax(200px,1fr));
+        gap:0.6rem;
+        margin-bottom:0.5rem;
+    }
+    .topic-check {
+        display:flex; align-items:center; gap:0.6rem;
+        background:var(--green-pale);
+        border:1.5px solid var(--border);
+        border-radius:8px;
+        padding:0.6rem 0.85rem;
+        cursor:pointer;
+        transition:all 0.12s;
+        user-select:none;
+    }
+    .topic-check:hover { border-color:var(--teal); background:var(--green-bg); }
+    .topic-check input[type=checkbox] { accent-color:var(--teal); width:16px; height:16px; cursor:pointer; }
+    .topic-check span { font-size:0.875rem; font-weight:500; color:var(--text-main); }
+    .topic-check.checked { border-color:var(--teal); background:#e0f5ee; }
+
+    .group-title { font-size:0.8rem; font-weight:700; color:var(--teal); text-transform:uppercase; letter-spacing:0.5px; margin:1.25rem 0 0.5rem; }
+
     .price-box {
-        background: var(--ink);
-        color: var(--white);
-        border-radius: 12px;
-        padding: 1.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin: 1.5rem 0;
+        background:var(--green-deep);
+        color:var(--white);
+        border-radius:12px;
+        padding:1.5rem;
+        display:flex; align-items:center; justify-content:space-between;
+        margin:1.5rem 0;
     }
-    .price-box .price { font-size: 2rem; font-weight: 900; color: var(--accent); }
-    .price-box .desc { font-size: 0.85rem; color: #aaa; margin-top: 0.2rem; }
-    .info-strip { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-    .info-item {
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-        font-size: 0.85rem;
-        color: var(--muted);
-    }
-    .info-item .dot {
-        width: 8px; height: 8px;
-        border-radius: 50%;
-        background: var(--accent);
-        flex-shrink: 0;
-    }
+    .price-box .price { font-size:2.25rem; font-weight:900; color:var(--teal-light,#b7e4c7); }
+    .price-box .desc { font-size:0.8rem; color:#a8d5b5; margin-top:0.2rem; }
+    .selected-count { font-size:0.85rem; color:var(--text-muted); margin-bottom:1.25rem; }
+    .selected-count strong { color:var(--teal); }
 </style>
 
 <div class="create-wrap">
-    <h1>✦ יצירת בחן חדש</h1>
-    <p class="sub">הכנס נושאים — אנחנו נבנה שאלות ברמות קל, בינוני וקשה</p>
-
-    <div class="info-strip">
-        <div class="info-item"><div class="dot"></div>5 שאלות בכל רמה (15 סה"כ)</div>
-        <div class="info-item"><div class="dot"></div>תשובות לאחר 48 שעות</div>
-        <div class="info-item"><div class="dot"></div>הסברים מפורטים</div>
-    </div>
+    <h1>יצירת בחן C#</h1>
+    <p class="sub">בחר את הנושאים שתרצה להיבחן עליהם</p>
 
     <div class="card">
-        <form method="post">
-            <div class="form-group">
-                <label>נושאי הבחן</label>
-                <textarea name="Topics" rows="3" placeholder="לדוגמה: פיזיקה קוונטית, גלים, תנועה הרמונית" required style="resize:vertical"></textarea>
-                <p class="topic-hint">הפרד נושאים בפסיק. ניתן להכניס כמה נושאים שתרצה.</p>
+        <form method="post" id="quizForm">
+
+            <div class="group-title">שפה ויסודות</div>
+            <div class="topics-grid">
+                @foreach (var t in new[]{"יסודות C# ו-.NET","טיפוסי נתונים ומשתנים","מחרוזות ו-String manipulation","תנאים ולולאות","מערכים ו-Collections","Nullable types"})
+                {
+                    <label class="topic-check">
+                        <input type="checkbox" name="selectedTopics" value="@t" onchange="updateCount(this)" />
+                        <span>@t</span>
+                    </label>
+                }
             </div>
+
+            <div class="group-title">תכנות מונחה עצמים</div>
+            <div class="topics-grid">
+                @foreach (var t in new[]{"Classes ו-Objects","Inheritance ו-Polymorphism","Interfaces ו-Abstract classes","Encapsulation","Constructors ו-Destructors","Static members"})
+                {
+                    <label class="topic-check">
+                        <input type="checkbox" name="selectedTopics" value="@t" onchange="updateCount(this)" />
+                        <span>@t</span>
+                    </label>
+                }
+            </div>
+
+            <div class="group-title">תכנות מתקדם</div>
+            <div class="topics-grid">
+                @foreach (var t in new[]{"LINQ","Delegates ו-Events","Lambda expressions","Generics","Exception handling","Extension methods","Pattern matching"})
+                {
+                    <label class="topic-check">
+                        <input type="checkbox" name="selectedTopics" value="@t" onchange="updateCount(this)" />
+                        <span>@t</span>
+                    </label>
+                }
+            </div>
+
+            <div class="group-title">Async ו-Concurrency</div>
+            <div class="topics-grid">
+                @foreach (var t in new[]{"async / await","Task ו-Threading","Parallel programming","CancellationToken"})
+                {
+                    <label class="topic-check">
+                        <input type="checkbox" name="selectedTopics" value="@t" onchange="updateCount(this)" />
+                        <span>@t</span>
+                    </label>
+                }
+            </div>
+
+            <div class="group-title">ASP.NET Core ו-Web</div>
+            <div class="topics-grid">
+                @foreach (var t in new[]{"ASP.NET Core MVC","Web API ו-REST","Middleware","Dependency Injection","Authentication ו-Authorization","Razor Pages"})
+                {
+                    <label class="topic-check">
+                        <input type="checkbox" name="selectedTopics" value="@t" onchange="updateCount(this)" />
+                        <span>@t</span>
+                    </label>
+                }
+            </div>
+
+            <div class="group-title">Data ו-Entity Framework</div>
+            <div class="topics-grid">
+                @foreach (var t in new[]{"Entity Framework Core","Migrations","Repository pattern","CRUD operations","Transactions"})
+                {
+                    <label class="topic-check">
+                        <input type="checkbox" name="selectedTopics" value="@t" onchange="updateCount(this)" />
+                        <span>@t</span>
+                    </label>
+                }
+            </div>
+
+            <div class="group-title">Design Patterns ו-Architecture</div>
+            <div class="topics-grid">
+                @foreach (var t in new[]{"Design Patterns","SOLID principles","Clean Architecture","Unit Testing","Dependency Inversion"})
+                {
+                    <label class="topic-check">
+                        <input type="checkbox" name="selectedTopics" value="@t" onchange="updateCount(this)" />
+                        <span>@t</span>
+                    </label>
+                }
+            </div>
+
+            <p class="selected-count">נבחרו: <strong id="countDisplay">0</strong> נושאים (15 שאלות לכל נושא — 5 בכל רמה)</p>
 
             <div class="price-box">
                 <div>
-                    <div class="price">₪49</div>
+                    <div class="price">₪99</div>
                     <div class="desc">תשלום חד פעמי לבחן</div>
                 </div>
-                <div style="text-align:left; font-size:0.85rem; color:#777; max-width:180px; line-height:1.5;">
-                    לאחר התשלום השאלות ייוצרו מיד. התשובות יפתחו לאחר 48 שעות.
+                <div style="font-size:0.8rem;color:#a8d5b5;max-width:180px;line-height:1.6">
+                    לאחר התשלום השאלות ייוצרו מיד. התשובות ייפתחו לאחר 48 שעות.
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width:100%; font-size:1rem; padding:0.9rem;">
-                המשך לתשלום ←
+            <button type="submit" class="btn btn-primary" style="width:100%;font-size:1rem;padding:0.9rem;" id="submitBtn" disabled>
+                בחר לפחות נושא אחד להמשיך ←
             </button>
         </form>
     </div>
 </div>
+
+<script>
+function updateCount(cb) {
+    var label = cb.closest('label');
+    if (cb.checked) label.classList.add('checked');
+    else label.classList.remove('checked');
+
+    var count = document.querySelectorAll('input[name=selectedTopics]:checked').length;
+    document.getElementById('countDisplay').textContent = count;
+    var btn = document.getElementById('submitBtn');
+    if (count > 0) {
+        btn.disabled = false;
+        btn.textContent = 'המשך לתשלום (' + count + ' נושאים) ←';
+    } else {
+        btn.disabled = true;
+        btn.textContent = 'בחר לפחות נושא אחד להמשיך ←';
+    }
+}
+</script>

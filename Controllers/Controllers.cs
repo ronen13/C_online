@@ -14,7 +14,6 @@ public class HomeController : Controller
 public class AuthController : Controller
 {
     private readonly AppDbContext _db;
-
     public AuthController(AppDbContext db) => _db = db;
 
     [HttpGet] public IActionResult Register() => View();
@@ -28,17 +27,14 @@ public class AuthController : Controller
             ViewBag.Error = "כתובת האימייל כבר קיימת במערכת";
             return View(model);
         }
-
         var user = new User
         {
             Name = model.Name,
             Email = model.Email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password)
         };
-
         _db.Users.Add(user);
         await _db.SaveChangesAsync();
-
         HttpContext.Session.SetInt32("UserId", user.Id);
         HttpContext.Session.SetString("UserName", user.Name);
         return RedirectToAction("Create", "Quiz");
@@ -53,7 +49,6 @@ public class AuthController : Controller
             ViewBag.Error = "אימייל או סיסמה שגויים";
             return View(model);
         }
-
         HttpContext.Session.SetInt32("UserId", user.Id);
         HttpContext.Session.SetString("UserName", user.Name);
         return RedirectToAction("MySessions", "Quiz");
@@ -76,10 +71,7 @@ public class QuizController : Controller
     public QuizController(AppDbContext db, QuestionGeneratorService generator,
         IConfiguration config, ILogger<QuizController> logger)
     {
-        _db = db;
-        _generator = generator;
-        _config = config;
-        _logger = logger;
+        _db = db; _generator = generator; _config = config; _logger = logger;
     }
 
     private int? CurrentUserId => HttpContext.Session.GetInt32("UserId");
@@ -95,43 +87,41 @@ public class QuizController : Controller
     public async Task<IActionResult> Create(CreateQuizViewModel model)
     {
         if (CurrentUserId == null) return RedirectToAction("Login", "Auth");
+        if (model.SelectedTopics == null || !model.SelectedTopics.Any())
+        {
+            ViewBag.Error = "יש לבחור לפחות נושא אחד";
+            return View(model);
+        }
 
+        var topics = string.Join(", ", model.SelectedTopics);
         var session = new QuizSession
         {
             UserId = CurrentUserId.Value,
-            Topics = model.Topics,
+            Topics = topics,
             Status = "pending_payment"
         };
-
         _db.QuizSessions.Add(session);
         await _db.SaveChangesAsync();
 
-        // Build Meshulam payment URL
-        // After payment, Meshulam redirects to success_url with transaction params
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
         var successUrl = Uri.EscapeDataString($"{baseUrl}/Quiz/PaymentSuccess?sessionId={session.Id}");
         var meshulam = _config["Payment:Url"];
 
         if (!string.IsNullOrEmpty(meshulam))
         {
-            var paymentLink = $"{meshulam}&sum=49&description=QuizGen-{session.Id}&success_url={successUrl}";
+            var paymentLink = $"{meshulam}&sum=99&description=MarketClab-Quiz-{session.Id}&success_url={successUrl}";
             return Redirect(paymentLink);
         }
 
-        // No payment URL — demo mode
         return RedirectToAction("SimulatePayment", new { id = session.Id });
     }
 
-    // Called by Meshulam after successful payment (redirect back to site)
+    // ← זהו הקישור שמכניסים במשולם כ-Callback URL
     [HttpGet]
     public async Task<IActionResult> PaymentSuccess(int sessionId, string? transaction_id)
     {
         var session = await _db.QuizSessions.FindAsync(sessionId);
         if (session == null) return NotFound();
-
-        // Verify session belongs to logged-in user (or trust Meshulam redirect)
-        if (CurrentUserId != null && session.UserId != CurrentUserId.Value)
-            return Forbid();
 
         if (session.Status == "pending_payment")
         {
@@ -140,29 +130,33 @@ public class QuizController : Controller
             session.AnswersAvailableAt = DateTime.UtcNow.AddHours(48);
             session.PaymentReference = transaction_id ?? $"MSH-{session.Id}";
             await _db.SaveChangesAsync();
+            _ = GenerateInBackground(session.Id, session.Topics, HttpContext.RequestServices);
+        }
 
-            // Generate questions in background
-            _ = GenerateInBackground(session.Id, session.Topics);
+        // אם המשתמש לא מחובר, שמור session ID ב-cookie כדי שיוכל לראות אחרי login
+        if (CurrentUserId == null)
+        {
+            HttpContext.Session.SetInt32("PendingSession", sessionId);
+            return RedirectToAction("Login", "Auth");
         }
 
         return RedirectToAction("Generating", new { id = session.Id });
     }
 
-    // Meshulam server-to-server webhook (POST)
+    // Server-to-server webhook מ-Meshulam
     [HttpPost]
     public async Task<IActionResult> PaymentWebhook()
     {
         try
         {
             var form = await Request.ReadFormAsync();
-            var description = form["description"].ToString(); // "QuizGen-{id}"
+            var description = form["description"].ToString();
             var status = form["status"].ToString();
             var transactionId = form["transaction_id"].ToString();
 
             if (status != "1") return Ok("not_success");
-
-            if (!description.StartsWith("QuizGen-")) return BadRequest("unknown");
-            if (!int.TryParse(description.Replace("QuizGen-", ""), out var sessionId))
+            if (!description.StartsWith("MarketClab-Quiz-")) return BadRequest("unknown");
+            if (!int.TryParse(description.Replace("MarketClab-Quiz-", ""), out var sessionId))
                 return BadRequest("bad_id");
 
             var session = await _db.QuizSessions.FindAsync(sessionId);
@@ -175,8 +169,7 @@ public class QuizController : Controller
                 session.AnswersAvailableAt = DateTime.UtcNow.AddHours(48);
                 session.PaymentReference = transactionId;
                 await _db.SaveChangesAsync();
-
-                _ = GenerateInBackground(session.Id, session.Topics);
+                _ = GenerateInBackground(session.Id, session.Topics, HttpContext.RequestServices);
             }
 
             return Ok("ok");
@@ -188,15 +181,17 @@ public class QuizController : Controller
         }
     }
 
-    private async Task GenerateInBackground(int sessionId, string topics)
+    private static async Task GenerateInBackground(int sessionId, string topics, IServiceProvider services)
     {
+        await Task.Delay(500);
         try
         {
-            var questions = await _generator.GenerateQuestionsAsync(topics, sessionId, 5);
-
-            // Use a fresh scope for DB access in background thread
-            var scope = HttpContext.RequestServices.CreateScope();
+            using var scope = services.CreateScope();
+            var generator = scope.ServiceProvider.GetRequiredService<QuestionGeneratorService>();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            var questions = await generator.GenerateQuestionsAsync(topics, sessionId, 5);
+
             var s = await db.QuizSessions.FindAsync(sessionId);
             if (s != null)
             {
@@ -207,11 +202,11 @@ public class QuizController : Controller
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Background generation failed for session {Id}", sessionId);
+            // Log but don't crash
+            Console.WriteLine($"[GenerateBackground] Error for session {sessionId}: {ex.Message}");
         }
     }
 
-    // Demo-only: simulate payment
     public async Task<IActionResult> SimulatePayment(int id)
     {
         if (CurrentUserId == null) return RedirectToAction("Login", "Auth");
@@ -234,8 +229,7 @@ public class QuizController : Controller
         session.PaymentReference = $"DEMO-{Guid.NewGuid().ToString()[..8].ToUpper()}";
         await _db.SaveChangesAsync();
 
-        _ = GenerateInBackground(session.Id, session.Topics);
-
+        _ = GenerateInBackground(session.Id, session.Topics, HttpContext.RequestServices);
         return RedirectToAction("Generating", new { id = session.Id });
     }
 
@@ -250,11 +244,9 @@ public class QuizController : Controller
     public async Task<IActionResult> View(int id)
     {
         if (CurrentUserId == null) return RedirectToAction("Login", "Auth");
-
         var session = await _db.QuizSessions
             .Include(s => s.Questions)
             .FirstOrDefaultAsync(s => s.Id == id && s.UserId == CurrentUserId.Value);
-
         if (session == null) return NotFound();
 
         var now = DateTime.UtcNow;
@@ -263,26 +255,23 @@ public class QuizController : Controller
         var vm = new QuizResultViewModel
         {
             Session = session,
-            EasyQuestions = session.Questions.Where(q => q.Difficulty == "easy").ToList(),
+            EasyQuestions   = session.Questions.Where(q => q.Difficulty == "easy").ToList(),
             MediumQuestions = session.Questions.Where(q => q.Difficulty == "medium").ToList(),
-            HardQuestions = session.Questions.Where(q => q.Difficulty == "hard").ToList(),
+            HardQuestions   = session.Questions.Where(q => q.Difficulty == "hard").ToList(),
             AnswersAvailable = answersAvailable,
             TimeUntilAnswers = answersAvailable ? null : session.AnswersAvailableAt - now
         };
-
         return View(vm);
     }
 
     public async Task<IActionResult> MySessions()
     {
         if (CurrentUserId == null) return RedirectToAction("Login", "Auth");
-
         var sessions = await _db.QuizSessions
             .Where(s => s.UserId == CurrentUserId.Value)
             .Include(s => s.Questions)
             .OrderByDescending(s => s.CreatedAt)
             .ToListAsync();
-
         return View(sessions);
     }
 
