@@ -159,7 +159,7 @@
 </div>
 
 @if(!Model.AnswersAvailable && answersAt.HasValue){
-    <span id="answers-at" data-iso="@answersAt.Value.ToString("o")" style="display:none"></span>
+    <span id="answers-at" data-iso='@answersAt.Value.ToString("o")' style="display:none"></span>
 }
 <script>
 var cur={easy:0,medium:0,hard:0};

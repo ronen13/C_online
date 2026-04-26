@@ -5,203 +5,142 @@
 <style>
     /* HERO */
     .hero-wrap {
-        background: var(--black);
-        padding: 5.5rem 1.5rem 5rem;
+        background: var(--gray-900);
+        padding: 5rem 1.5rem 4.5rem;
         text-align: center;
-        position: relative;
-        overflow: hidden;
-        border-bottom: 1px solid #1f2937;
+        border-bottom: 1px solid #2a2a2a;
     }
-    .hero-wrap::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(58,140,126,0.18) 0%, transparent 70%);
-        pointer-events: none;
-    }
+    .hero-logo { height: 90px; width: auto; margin: 0 auto 2rem; display: block; }
     .hero-badge {
-        display: inline-flex; align-items: center; gap: 0.4rem;
-        background: rgba(58,140,126,0.15);
-        border: 1px solid rgba(58,140,126,0.35);
-        color: var(--teal-light);
-        border-radius: 20px; padding: 0.3rem 1rem;
-        font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em;
-        margin-bottom: 1.75rem;
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        background: rgba(58,140,126,0.15); border: 1px solid rgba(58,140,126,0.4);
+        color: #5db8a8; border-radius: 20px; padding: 0.3rem 1rem;
+        font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em; margin-bottom: 1.5rem;
     }
-    .hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal-light); }
-    .hero-logo { height: 70px; width: auto; margin: 0 auto 2rem; display: block; filter: brightness(0) invert(1); opacity: 0.9; }
     .hero h1 {
-        font-size: clamp(2.2rem, 5vw, 3.75rem);
-        font-weight: 900;
-        line-height: 1.08;
-        letter-spacing: -1.5px;
-        color: var(--white);
-        margin-bottom: 1.25rem;
+        font-size: clamp(2.2rem, 5vw, 3.75rem); font-weight: 900;
+        line-height: 1.08; letter-spacing: -1.5px;
+        color: var(--white); margin-bottom: 1.25rem;
     }
-    .hero h1 .accent { color: var(--teal-light); }
-    .hero h1 .accent-blue { color: #60a5fa; }
-    .hero-sub {
-        font-size: 1.05rem;
-        color: var(--gray-400);
-        line-height: 1.7;
-        max-width: 520px;
-        margin: 0 auto 2.5rem;
-    }
+    .hero h1 .acc-teal { color: #5db8a8; }
+    .hero h1 .acc-blue { color: #93c5fd; }
+    .hero-sub { font-size: 1.05rem; color: var(--gray-400); line-height: 1.7; max-width: 520px; margin: 0 auto 2.5rem; }
     .hero-cta { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
-    .hero-stats {
-        display: flex; justify-content: center; gap: 3rem;
-        margin-top: 3.5rem; padding-top: 2.5rem;
-        border-top: 1px solid #1f2937;
-    }
+    .btn-hero-outline { background: transparent; color: var(--gray-300); border: 1.5px solid #374151; border-radius: 8px; padding: 0.65rem 1.5rem; font-family: 'Heebo', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.15s; display: inline-flex; align-items: center; }
+    .btn-hero-outline:hover { border-color: var(--gray-500); color: var(--white); }
+    .hero-stats { display: flex; justify-content: center; gap: 3rem; margin-top: 3.5rem; padding-top: 2.5rem; border-top: 1px solid #2a2a2a; flex-wrap: wrap; }
     .hero-stat-num { font-size: 1.75rem; font-weight: 900; color: var(--white); }
-    .hero-stat-lbl { font-size: 0.8rem; color: var(--gray-500); margin-top: 0.15rem; }
+    .hero-stat-lbl { font-size: 0.78rem; color: var(--gray-500); margin-top: 0.15rem; }
 
     /* LEVELS */
-    .levels-wrap { background: var(--gray-900); padding: 4rem 1.5rem; border-top: 1px solid #1f2937; border-bottom: 1px solid #1f2937; }
+    .levels-wrap { background: var(--white); padding: 4rem 1.5rem; border-bottom: 1px solid var(--border); }
     .levels-inner { max-width: 980px; margin: 0 auto; }
-    .section-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal-light); margin-bottom: 0.75rem; }
-    .section-title { font-size: 1.75rem; font-weight: 900; color: var(--white); margin-bottom: 0.5rem; }
-    .section-sub { color: var(--gray-500); font-size: 0.9rem; margin-bottom: 2.5rem; }
-    .levels-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
-    .level-card {
-        border-radius: 12px; padding: 1.75rem;
-        border: 1px solid; text-align: center;
-    }
-    .level-easy   { background: #052e16; border-color: #14532d; }
-    .level-medium { background: #1c1200; border-color: #713f12; }
-    .level-hard   { background: #1c0808; border-color: #7f1d1d; }
-    .level-icon { font-size: 2rem; margin-bottom: 0.75rem; }
-    .level-easy   .level-title { color: #4ade80; font-weight: 700; font-size: 1rem; }
-    .level-medium .level-title { color: #fbbf24; font-weight: 700; font-size: 1rem; }
-    .level-hard   .level-title { color: #f87171; font-weight: 700; font-size: 1rem; }
-    .level-count { font-size: 2rem; font-weight: 900; color: var(--white); margin: 0.5rem 0 0.25rem; }
-    .level-desc { font-size: 0.8rem; color: var(--gray-500); }
+    .sec-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.5rem; }
+    .sec-title { font-size: 1.75rem; font-weight: 900; color: var(--gray-900); margin-bottom: 0.4rem; }
+    .sec-sub { color: var(--gray-500); font-size: 0.9rem; margin-bottom: 2.5rem; }
+    .levels-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; }
+    .level-card { border-radius: 14px; padding: 2rem; border: 1.5px solid; text-align: center; }
+    .level-easy   { background: #f0fdf4; border-color: #bbf7d0; }
+    .level-medium { background: #fffbeb; border-color: #fde68a; }
+    .level-hard   { background: #fff1f2; border-color: #fecdd3; }
+    .level-easy   .lv-title { color: #166534; font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; }
+    .level-medium .lv-title { color: #92400e; font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; }
+    .level-hard   .lv-title { color: #991b1b; font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; }
+    .lv-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+    .lv-num { font-size: 3rem; font-weight: 900; color: var(--gray-900); line-height: 1; margin-bottom: 0.4rem; }
+    .lv-desc { font-size: 0.82rem; color: var(--gray-500); line-height: 1.5; }
 
     /* FEATURES */
-    .features-wrap { padding: 4.5rem 1.5rem; max-width: 980px; margin: 0 auto; }
-    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 1rem; margin-top: 2.5rem; }
-    .feature-card {
-        background: var(--white);
-        border: 1px solid var(--gray-200);
-        border-radius: 12px;
-        padding: 1.5rem;
-        transition: border-color 0.15s, transform 0.15s;
-    }
-    .feature-card:hover { border-color: var(--teal); transform: translateY(-2px); }
-    .feature-icon-wrap {
-        width: 42px; height: 42px; border-radius: 10px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.2rem; margin-bottom: 1rem;
-    }
-    .fi-teal  { background: rgba(58,140,126,0.1); }
-    .fi-blue  { background: rgba(37,99,235,0.1); }
-    .fi-gray  { background: var(--gray-100); }
+    .features-wrap { background: var(--gray-50); padding: 4rem 1.5rem; border-bottom: 1px solid var(--border); }
+    .features-inner { max-width: 980px; margin: 0 auto; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 1rem; margin-top: 2.5rem; }
+    .feature-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; transition: border-color 0.15s, transform 0.15s; }
+    .feature-card:hover { border-color: var(--teal); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+    .fi-wrap { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 1rem; }
+    .fi-teal { background: rgba(58,140,126,0.1); }
+    .fi-blue { background: rgba(37,99,235,0.08); }
+    .fi-gray { background: var(--gray-100); }
     .feature-card h3 { font-size: 0.95rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.4rem; }
-    .feature-card p { font-size: 0.85rem; color: var(--gray-500); line-height: 1.6; }
+    .feature-card p  { font-size: 0.85rem; color: var(--gray-500); line-height: 1.6; }
 
     /* TOPICS */
-    .topics-wrap { background: var(--gray-900); padding: 4rem 1.5rem; border-top: 1px solid #1f2937; }
+    .topics-wrap { background: var(--white); padding: 4rem 1.5rem; border-bottom: 1px solid var(--border); }
     .topics-inner { max-width: 980px; margin: 0 auto; }
-    .topics-pills { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 2rem; }
-    .t-pill {
-        background: #1f2937; border: 1px solid #374151;
-        color: var(--gray-300); border-radius: 20px;
-        padding: 0.3rem 0.9rem; font-size: 0.8rem; font-weight: 500;
-        transition: all 0.12s;
-    }
-    .t-pill:hover { border-color: var(--teal); color: var(--teal-light); }
+    .topic-pills { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.75rem; }
+    .t-pill { background: var(--gray-50); border: 1px solid var(--gray-200); color: var(--gray-600); border-radius: 20px; padding: 0.3rem 0.9rem; font-size: 0.82rem; font-weight: 500; transition: all 0.12s; }
+    .t-pill:hover { border-color: var(--teal); color: var(--teal-dark); background: rgba(58,140,126,0.06); }
 
-    /* CTA STRIP */
-    .cta-strip {
-        background: linear-gradient(135deg, var(--teal-dark) 0%, #1a4a40 100%);
-        padding: 4rem 1.5rem;
-        text-align: center;
-        border-top: 1px solid rgba(255,255,255,0.05);
-    }
+    /* CTA */
+    .cta-strip { background: var(--gray-900); padding: 4.5rem 1.5rem; text-align: center; }
     .cta-strip h2 { font-size: 1.75rem; font-weight: 900; color: var(--white); margin-bottom: 0.5rem; }
-    .cta-strip p { color: rgba(255,255,255,0.65); margin-bottom: 1.75rem; font-size: 0.95rem; }
+    .cta-strip p { color: var(--gray-400); margin-bottom: 2rem; font-size: 0.95rem; }
 </style>
 
 <div class="hero-wrap">
-    <div class="hero-badge"><div class="dot"></div>C# · .NET · ASP.NET · EF Core</div>
-    <img src="/images/logo.png" alt="MarketClab" class="hero-logo" />
-    <h1>
-        בחינות <span class="accent">C#</span><br>
-        ברמה <span class="accent-blue">אחרת</span>
-    </h1>
-    <p class="hero-sub">100 שאלות לכל בחן — קל, בינוני וקשה. בחר נושאים, שלם, קבל שאלות. התשובות נפתחות אחרי 48 שעות.</p>
-    <div class="hero-cta">
-        <a href="/Auth/Register" class="btn btn-primary">התחל עכשיו ←</a>
-        <a href="/Auth/Login" class="btn btn-outline" style="color:var(--gray-300);border-color:#374151;">יש לי חשבון</a>
+    <img src="/images/logo-color.png" alt="MarketClab" class="hero-logo" />
+    <div class="hero-badge">C# · .NET · ASP.NET · EF Core</div>
+    <div class="hero">
+        <h1>בוחני <span class="acc-teal">C#</span><br>ברמה <span class="acc-blue">אחרת</span></h1>
+        <p class="hero-sub">100 שאלות לכל בוחן — קל, בינוני וקשה. בחר נושאים, שלם, קבל שאלות. התשובות נפתחות אחרי 48 שעות.</p>
+        <div class="hero-cta">
+            <a href="/Auth/Register" class="btn btn-primary" style="font-size:1rem;padding:0.75rem 2rem;">התחל עכשיו ←</a>
+            <a href="/Auth/Login" class="btn-hero-outline">יש לי חשבון</a>
+        </div>
     </div>
     <div class="hero-stats">
-        <div><div class="hero-stat-num">100</div><div class="hero-stat-lbl">שאלות לבחן</div></div>
+        <div><div class="hero-stat-num">100</div><div class="hero-stat-lbl">שאלות לבוחן</div></div>
         <div><div class="hero-stat-num">3</div><div class="hero-stat-lbl">רמות קושי</div></div>
-        <div><div class="hero-stat-num">27+</div><div class="hero-stat-lbl">נושאי C#</div></div>
+        <div><div class="hero-stat-num">30+</div><div class="hero-stat-lbl">נושאי C#</div></div>
         <div><div class="hero-stat-num">48h</div><div class="hero-stat-lbl">עד גילוי תשובות</div></div>
     </div>
 </div>
 
 <div class="levels-wrap">
     <div class="levels-inner">
-        <div class="section-label">חלוקת שאלות</div>
-        <div class="section-title">100 שאלות — 3 רמות</div>
-        <div class="section-sub">כל תשלום כולל 100 שאלות מחולקות לשלוש רמות</div>
+        <div class="sec-label">חלוקת שאלות</div>
+        <div class="sec-title">100 שאלות — 3 רמות קושי</div>
+        <div class="sec-sub">כל תשלום כולל 100 שאלות מחולקות לשלוש רמות</div>
         <div class="levels-grid">
             <div class="level-card level-easy">
-                <div class="level-icon">🟢</div>
-                <div class="level-title">קל</div>
-                <div class="level-count">34</div>
-                <div class="level-desc">מושגים בסיסיים, תחביר, יסודות</div>
+                <div class="lv-icon">🟢</div>
+                <div class="lv-title">קל</div>
+                <div class="lv-num">34</div>
+                <div class="lv-desc">מושגים בסיסיים, תחביר, יסודות</div>
             </div>
             <div class="level-card level-medium">
-                <div class="level-icon">🟡</div>
-                <div class="level-title">בינוני</div>
-                <div class="level-count">33</div>
-                <div class="level-desc">הבנה, יישום, פתרון בעיות</div>
+                <div class="lv-icon">🟡</div>
+                <div class="lv-title">בינוני</div>
+                <div class="lv-num">33</div>
+                <div class="lv-desc">הבנה, יישום, פתרון בעיות</div>
             </div>
             <div class="level-card level-hard">
-                <div class="level-icon">🔴</div>
-                <div class="level-title">קשה</div>
-                <div class="level-count">33</div>
-                <div class="level-desc">ניתוח עמוק, best practices, edge cases</div>
+                <div class="lv-icon">🔴</div>
+                <div class="lv-title">קשה</div>
+                <div class="lv-num">33</div>
+                <div class="lv-desc">ניתוח עמוק, best practices, edge cases</div>
             </div>
         </div>
     </div>
 </div>
 
 <div class="features-wrap">
-    <div class="section-label">יתרונות</div>
-    <div class="section-title" style="color:var(--gray-900)">למה MarketClab Quiz?</div>
-    <div class="features-grid">
-        <div class="feature-card">
-            <div class="feature-icon-wrap fi-teal">⚙️</div>
-            <h3>נושאי C# מקיפים</h3>
-            <p>מ-OOP בסיסי ועד async/await מתקדם, LINQ, EF Core ו-Design Patterns</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon-wrap fi-blue">🎯</div>
-            <h3>בחירה חופשית</h3>
-            <p>סמן בדיוק את הנושאים הרלוונטיים לך — בחן מותאם אישית</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon-wrap fi-gray">⏱️</div>
-            <h3>48 שעות להכנה</h3>
-            <p>השאלות מיידיות, התשובות נפתחות אחרי 48 שעות — מעודד למידה אמיתית</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon-wrap fi-teal">💡</div>
-            <h3>הסברים מעמיקים</h3>
-            <p>כל תשובה עם הסבר מפורט שמסביר את העיקרון ב-C#</p>
+    <div class="features-inner">
+        <div class="sec-label">יתרונות</div>
+        <div class="sec-title">למה MarketClab Quiz?</div>
+        <div class="features-grid">
+            <div class="feature-card"><div class="fi-wrap fi-teal">⚙️</div><h3>נושאי C# מקיפים</h3><p>מ-OOP בסיסי ועד async/await מתקדם, LINQ, EF Core ו-Design Patterns</p></div>
+            <div class="feature-card"><div class="fi-wrap fi-blue">🎯</div><h3>בחירה חופשית</h3><p>סמן בדיוק את הנושאים הרלוונטיים לך — בוחן מותאם אישית</p></div>
+            <div class="feature-card"><div class="fi-wrap fi-gray">⏱️</div><h3>48 שעות להכנה</h3><p>השאלות מיידיות, התשובות נפתחות אחרי 48 שעות — מעודד למידה אמיתית</p></div>
+            <div class="feature-card"><div class="fi-wrap fi-teal">💡</div><h3>הסברים מעמיקים</h3><p>כל תשובה עם הסבר מפורט שמסביר את העיקרון ב-C#</p></div>
         </div>
     </div>
 </div>
 
 <div class="topics-wrap">
     <div class="topics-inner">
-        <div class="section-label" style="color:var(--teal-light)">נושאים זמינים</div>
-        <div class="section-title">כל עולם ה-C# מכוסה</div>
-        <div class="topics-pills">
+        <div class="sec-label">נושאים זמינים</div>
+        <div class="sec-title">כל עולם ה-C# מכוסה</div>
+        <div class="topic-pills">
             @foreach(var t in new[]{"יסודות C#","OOP","Inheritance","Interfaces","Abstract Classes","Encapsulation","LINQ","Generics","async / await","Tasks & Threading","Delegates","Events","Lambda","Extension Methods","Pattern Matching","Exception Handling","Entity Framework Core","Migrations","ASP.NET Core MVC","Web API","Dependency Injection","Middleware","Authentication","SOLID Principles","Design Patterns","Unit Testing","Clean Architecture","Nullable Types","Collections","String Manipulation","Span&lt;T&gt;","Records","Source Generators"})
             { <span class="t-pill">@t</span> }
         </div>
@@ -210,6 +149,6 @@
 
 <div class="cta-strip">
     <h2>מוכן להתחיל?</h2>
-    <p>הרשמה חינמית — שלם רק כשבוחרים נושאים</p>
+    <p>הרשמה חינמית — שלם רק כשיוצרים בוחן</p>
     <a href="/Auth/Register" class="btn btn-primary" style="font-size:1rem;padding:0.75rem 2rem;">צור חשבון עכשיו ←</a>
 </div>

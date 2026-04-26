@@ -1,34 +1,36 @@
 @model List<QuizSystem.Models.QuizSession>
-@{ Layout="_Layout"; ViewData["Title"]="הבחנים שלי"; }
+@{ Layout="_Layout"; ViewData["Title"]="הבוחנים שלי"; }
 <style>
-    .sessions-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem; }
-    .sessions-header h1 { font-size:1.6rem; font-weight:900; color:var(--gray-900); }
-    .session-card {
-        background:var(--white); border:1px solid var(--gray-200); border-radius:12px;
-        padding:1.25rem 1.5rem; margin-bottom:0.75rem;
-        display:flex; align-items:center; justify-content:space-between;
-        text-decoration:none; color:inherit; transition:all 0.15s;
-    }
+    .page-header { background:var(--white); border-bottom:1px solid var(--border); padding:2rem 1.5rem; }
+    .page-header-inner { max-width:980px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; }
+    .page-header h1 { font-size:1.6rem; font-weight:900; color:var(--gray-900); }
+    .page-header p { color:var(--gray-500); font-size:0.85rem; margin-top:0.2rem; }
+    .session-card { background:var(--white); border:1px solid var(--border); border-radius:12px; padding:1.25rem 1.5rem; margin-bottom:0.75rem; display:flex; align-items:center; justify-content:space-between; text-decoration:none; color:inherit; transition:all 0.15s; }
     .session-card:hover { border-color:var(--teal); box-shadow:0 4px 14px rgba(0,0,0,0.06); transform:translateY(-1px); }
     .session-topics { font-weight:700; font-size:0.95rem; color:var(--gray-900); margin-bottom:0.3rem; }
-    .session-meta { font-size:0.78rem; color:var(--gray-400); display:flex; gap:0.75rem; align-items:center; }
+    .session-meta { font-size:0.78rem; color:var(--gray-400); display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap; }
     .meta-dot { width:3px; height:3px; border-radius:50%; background:var(--gray-300); }
     .empty-state { text-align:center; padding:5rem 1rem; }
     .empty-icon { font-size:3.5rem; margin-bottom:1.25rem; }
     .empty-state h2 { font-size:1.25rem; font-weight:700; color:var(--gray-900); margin-bottom:0.5rem; }
     .empty-state p { color:var(--gray-500); font-size:0.9rem; margin-bottom:1.75rem; }
 </style>
-<div class="container">
-    <div class="sessions-header">
-        <h1>הבחנים שלי</h1>
-        <a href="/Quiz/Create" class="btn btn-primary">+ בחן חדש</a>
+<div class="page-header">
+    <div class="page-header-inner">
+        <div>
+            <h1>הבוחנים שלי</h1>
+            <p>כל הבוחנים שיצרת</p>
+        </div>
+        <a href="/Quiz/Create" class="btn btn-primary">+ בוחן חדש</a>
     </div>
+</div>
+<div class="container">
     @if(!Model.Any()){
         <div class="empty-state">
             <div class="empty-icon">📭</div>
-            <h2>אין בחנים עדיין</h2>
-            <p>צור את הבחן הראשון שלך — בחר נושאי C# וקבל 100 שאלות</p>
-            <a href="/Quiz/Create" class="btn btn-primary">יצירת בחן ראשון ←</a>
+            <h2>אין בוחנים עדיין</h2>
+            <p>צור את הבוחן הראשון שלך — בחר נושאי C# וקבל 100 שאלות</p>
+            <a href="/Quiz/Create" class="btn btn-primary">יצירת בוחן ראשון ←</a>
         </div>
     } else {
         @foreach(var s in Model){
@@ -44,7 +46,7 @@
                 <div>
                     <div class="session-topics">@(s.Topics.Length>72?s.Topics[..72]+"…":s.Topics)</div>
                     <div class="session-meta">
-                        <span>@s.CreatedAt.ToString("dd/MM/yyyy")</span>
+                        <span>@s.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
                         <div class="meta-dot"></div>
                         <span>@s.Questions.Count שאלות</span>
                         @if(s.AnswersAvailableAt.HasValue && !open){

@@ -8,225 +8,93 @@
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
         :root {
-            /* Brand palette — extracted from MarketClab logo */
-            --teal:        #3a8c7e;
-            --teal-light:  #5db8a8;
-            --teal-dark:   #2a6b5f;
-            --green:       #4a8c5c;
-            --green-light: #b7e4c7;
-            --green-pale:  #e8f5ec;
+            --teal:       #3a8c7e;
+            --teal-light: #5db8a8;
+            --teal-dark:  #2a6b5f;
+            --green:      #4a8c5c;
+            --blue:       #2563eb;
+            --blue-light: #60a5fa;
 
-            /* Neutrals */
-            --black:       #0d0d0d;
-            --gray-900:    #111827;
-            --gray-800:    #1f2937;
-            --gray-700:    #374151;
-            --gray-600:    #4b5563;
-            --gray-500:    #6b7280;
-            --gray-400:    #9ca3af;
-            --gray-300:    #d1d5db;
-            --gray-200:    #e5e7eb;
-            --gray-100:    #f3f4f6;
-            --gray-50:     #f9fafb;
-            --white:       #ffffff;
+            --black:      #0d0d0d;
+            --gray-900:   #111827;
+            --gray-800:   #1f2937;
+            --gray-700:   #374151;
+            --gray-600:   #4b5563;
+            --gray-500:   #6b7280;
+            --gray-400:   #9ca3af;
+            --gray-300:   #d1d5db;
+            --gray-200:   #e5e7eb;
+            --gray-100:   #f3f4f6;
+            --gray-50:    #f9fafb;
+            --white:      #ffffff;
 
-            /* Accent blue */
-            --blue:        #2563eb;
-            --blue-light:  #3b82f6;
-            --blue-pale:   #eff6ff;
-
-            /* Semantic */
-            --surface:     var(--white);
-            --border:      var(--gray-200);
-            --text:        var(--gray-900);
-            --text-muted:  var(--gray-500);
-            --bg:          var(--gray-50);
+            --text:       #111827;
+            --text-muted: #4b5563;
+            --border:     #e5e7eb;
+            --bg:         #f3f4f6;
+            --surface:    #ffffff;
         }
+        body { font-family:'Heebo',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; direction:rtl; -webkit-font-smoothing:antialiased; }
 
-        body {
-            font-family: 'Heebo', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            direction: rtl;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* ─── NAVBAR ─────────────────────────────────────────── */
         nav {
-            background: var(--black);
-            height: 64px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid #222;
-        }
-
-        .nav-logo { display: flex; align-items: center; text-decoration: none; }
-        .nav-logo img { height: 38px; width: auto; filter: brightness(0) invert(1); opacity: 0.9; }
-
-        .nav-links { display: flex; align-items: center; gap: 0.25rem; }
-        .nav-links a {
-            color: var(--gray-400);
-            text-decoration: none;
-            padding: 0.45rem 0.85rem;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            font-weight: 400;
-            transition: color 0.15s, background 0.15s;
-        }
-        .nav-links a:hover { color: var(--white); background: rgba(255,255,255,0.07); }
-        .nav-btn {
-            background: var(--teal) !important;
-            color: var(--white) !important;
-            font-weight: 600 !important;
-            padding: 0.45rem 1.1rem !important;
-            border-radius: 6px !important;
-        }
-        .nav-btn:hover { background: var(--teal-dark) !important; }
-
-        /* ─── LAYOUT ─────────────────────────────────────────── */
-        .container { max-width: 980px; margin: 0 auto; padding: 2.5rem 1.5rem; }
-
-        /* ─── BUTTONS ────────────────────────────────────────── */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            padding: 0.6rem 1.4rem;
-            border-radius: 8px;
-            font-family: 'Heebo', sans-serif;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            border: 1.5px solid transparent;
-            text-decoration: none;
-            transition: all 0.15s;
-            letter-spacing: 0.01em;
-        }
-        .btn-primary {
-            background: var(--teal);
-            color: var(--white);
-            border-color: var(--teal);
-        }
-        .btn-primary:hover {
-            background: var(--teal-dark);
-            border-color: var(--teal-dark);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 14px rgba(58,140,126,0.35);
-        }
-        .btn-outline {
-            background: transparent;
-            color: var(--text);
-            border-color: var(--gray-300);
-        }
-        .btn-outline:hover { border-color: var(--gray-500); color: var(--text); }
-        .btn-blue {
-            background: var(--blue);
-            color: var(--white);
-            border-color: var(--blue);
-        }
-        .btn-blue:hover { background: #1d4ed8; transform: translateY(-1px); }
-        .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
-
-        /* ─── CARDS ──────────────────────────────────────────── */
-        .card {
-            background: var(--surface);
-            border-radius: 14px;
-            border: 1px solid var(--border);
-            padding: 2rem;
-            margin-bottom: 1.25rem;
-        }
-        .card-dark {
             background: var(--gray-900);
-            border-color: #2a2a2a;
-            color: var(--white);
+            height: 66px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 2rem;
+            position: sticky; top: 0; z-index: 100;
+            border-bottom: 1px solid #2a2a2a;
         }
+        .nav-logo { display:flex; align-items:center; gap:0.5rem; text-decoration:none; }
+        .nav-logo img { height:40px; width:auto; }
+        .nav-links { display:flex; align-items:center; gap:0.25rem; }
+        .nav-links a { color:var(--gray-400); text-decoration:none; padding:0.45rem 0.85rem; border-radius:6px; font-size:0.85rem; font-weight:500; transition:all 0.15s; }
+        .nav-links a:hover { color:var(--white); background:rgba(255,255,255,0.08); }
+        .nav-btn { background:var(--teal) !important; color:var(--white) !important; font-weight:600 !important; border-radius:6px; }
+        .nav-btn:hover { background:var(--teal-dark) !important; }
 
-        /* ─── FORMS ──────────────────────────────────────────── */
-        .form-group { margin-bottom: 1.1rem; }
-        .form-group label {
-            display: block;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--gray-500);
-            margin-bottom: 0.4rem;
-        }
-        .form-group input, .form-group textarea {
-            width: 100%;
-            padding: 0.65rem 0.9rem;
-            border: 1.5px solid var(--gray-200);
-            border-radius: 8px;
-            font-family: 'Heebo', sans-serif;
-            font-size: 0.95rem;
-            background: var(--white);
-            color: var(--text);
-            transition: border-color 0.15s, box-shadow 0.15s;
-            direction: rtl;
-        }
-        .form-group input:focus, .form-group textarea:focus {
-            outline: none;
-            border-color: var(--teal);
-            box-shadow: 0 0 0 3px rgba(58,140,126,0.12);
-        }
+        .container { max-width:980px; margin:0 auto; padding:2.5rem 1.5rem; }
 
-        /* ─── ALERTS ─────────────────────────────────────────── */
-        .alert { padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.875rem; }
-        .alert-error { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
-        .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+        .btn { display:inline-flex; align-items:center; gap:0.4rem; padding:0.65rem 1.5rem; border-radius:8px; font-family:'Heebo',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; border:1.5px solid transparent; text-decoration:none; transition:all 0.15s; }
+        .btn-primary { background:var(--teal); color:var(--white); border-color:var(--teal); }
+        .btn-primary:hover { background:var(--teal-dark); transform:translateY(-1px); box-shadow:0 4px 14px rgba(58,140,126,0.3); }
+        .btn-outline { background:var(--white); color:var(--gray-700); border-color:var(--gray-300); }
+        .btn-outline:hover { border-color:var(--gray-400); }
+        .btn-ghost { background:transparent; color:var(--gray-600); border-color:rgba(255,255,255,0.15); }
+        .btn-ghost:hover { background:rgba(255,255,255,0.08); color:var(--white); }
+        .btn:disabled { opacity:0.45; cursor:not-allowed; transform:none !important; box-shadow:none !important; }
 
-        /* ─── BADGES ─────────────────────────────────────────── */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            padding: 0.2rem 0.65rem;
-            border-radius: 20px;
-            font-size: 0.72rem;
-            font-weight: 700;
-            letter-spacing: 0.02em;
-        }
-        .badge-easy     { background: #dcfce7; color: #166534; }
-        .badge-medium   { background: #fef9c3; color: #854d0e; }
-        .badge-hard     { background: #fee2e2; color: #991b1b; }
-        .badge-ready    { background: #dcfce7; color: #166534; }
-        .badge-gen      { background: #fef9c3; color: #854d0e; }
-        .badge-pending  { background: var(--gray-100); color: var(--gray-600); }
-        .badge-blue     { background: var(--blue-pale); color: var(--blue); }
+        .card { background:var(--surface); border-radius:14px; border:1px solid var(--border); padding:2rem; margin-bottom:1.25rem; }
 
-        /* ─── DIVIDER ─────────────────────────────────────────── */
-        .divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+        .form-group { margin-bottom:1.1rem; }
+        .form-group label { display:block; font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--gray-500); margin-bottom:0.4rem; }
+        .form-group input, .form-group textarea { width:100%; padding:0.65rem 0.9rem; border:1.5px solid var(--gray-200); border-radius:8px; font-family:'Heebo',sans-serif; font-size:0.95rem; background:var(--white); color:var(--text); transition:border-color 0.15s, box-shadow 0.15s; direction:rtl; }
+        .form-group input:focus, .form-group textarea:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(58,140,126,0.1); }
 
-        /* ─── FOOTER ──────────────────────────────────────────── */
-        footer {
-            text-align: center;
-            padding: 2rem;
-            margin-top: 5rem;
-            border-top: 1px solid var(--border);
-            color: var(--text-muted);
-            font-size: 0.82rem;
-        }
+        .alert { padding:0.75rem 1rem; border-radius:8px; margin-bottom:1rem; font-size:0.875rem; }
+        .alert-error { background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; }
+
+        .badge { display:inline-flex; align-items:center; padding:0.2rem 0.65rem; border-radius:20px; font-size:0.72rem; font-weight:700; letter-spacing:0.02em; }
+        .badge-easy    { background:#dcfce7; color:#166534; }
+        .badge-medium  { background:#fef9c3; color:#854d0e; }
+        .badge-hard    { background:#fee2e2; color:#991b1b; }
+        .badge-ready   { background:#dcfce7; color:#166534; }
+        .badge-gen     { background:#fef9c3; color:#854d0e; }
+        .badge-pending { background:var(--gray-100); color:var(--gray-600); }
+
+        footer { text-align:center; padding:2.5rem 1rem; margin-top:5rem; border-top:1px solid var(--border); color:var(--gray-400); font-size:0.82rem; background:var(--gray-50); }
     </style>
 </head>
 <body>
-
 <nav>
     <a href="/" class="nav-logo">
-        <img src="/images/logo.png" alt="MarketClab.io" />
+        <img src="/images/logo-color.png" alt="MarketClab.io" />
     </a>
     <div class="nav-links">
         @if (Context.Session.GetInt32("UserId") != null)
         {
-            <a href="/Quiz/MySessions">הבחנים שלי</a>
-            <a href="/Quiz/Create" class="nav-btn">+ בחן חדש</a>
+            <a href="/Quiz/MySessions">הבוחנים שלי</a>
+            <a href="/Quiz/Create" class="nav-btn">+ בוחן חדש</a>
             <a href="/Auth/Logout">התנתקות</a>
         }
         else
@@ -236,12 +104,7 @@
         }
     </div>
 </nav>
-
 <main>@RenderBody()</main>
-
-<footer>
-    © @DateTime.Now.Year MarketClab.io &mdash; Code. Market. Thrive.
-</footer>
-
+<footer>© @DateTime.Now.Year MarketClab.io — Code. Market. Thrive.</footer>
 </body>
 </html>

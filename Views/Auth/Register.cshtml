@@ -1,25 +1,23 @@
 @model QuizSystem.Models.RegisterViewModel
 @{ Layout="_Layout"; ViewData["Title"]="הרשמה"; }
 <style>
-    .auth-wrap { min-height:calc(100vh - 64px); display:flex; align-items:center; justify-content:center; padding:3rem 1rem; background:var(--gray-50); }
-    .auth-box { width:100%; max-width:400px; }
-    .auth-card { background:var(--white); border:1px solid var(--gray-200); border-radius:16px; padding:2.5rem; }
-    .auth-logo { height:32px; display:block; margin:0 auto 1.75rem; }
-    .auth-card h1 { font-size:1.5rem; font-weight:900; color:var(--gray-900); margin-bottom:0.3rem; text-align:center; }
+    .auth-page { min-height:calc(100vh - 66px); display:flex; align-items:center; justify-content:center; padding:3rem 1rem; }
+    .auth-box { width:100%; max-width:420px; }
+    .auth-card { background:var(--white); border:1px solid var(--border); border-radius:16px; padding:2.5rem; box-shadow:0 4px 24px rgba(0,0,0,0.06); }
+    .auth-logo { height:48px; display:block; margin:0 auto 1.75rem; }
+    .auth-card h1 { font-size:1.5rem; font-weight:900; color:var(--gray-900); text-align:center; margin-bottom:0.3rem; }
     .auth-sub { color:var(--gray-500); font-size:0.85rem; text-align:center; margin-bottom:1.75rem; }
-    .auth-link { text-align:center; margin-top:1.25rem; font-size:0.85rem; color:var(--gray-500); }
+    .auth-link { text-align:center; margin-top:1rem; font-size:0.85rem; color:var(--gray-500); }
     .auth-link a { color:var(--teal); font-weight:600; text-decoration:none; }
-    .divider-text { display:flex; align-items:center; gap:0.75rem; margin:1.25rem 0; color:var(--gray-400); font-size:0.8rem; }
-    .divider-text::before,.divider-text::after { content:''; flex:1; height:1px; background:var(--gray-200); }
-    .submit-btn { width:100%; padding:0.75rem; font-size:0.95rem; border-radius:8px; border:none; background:var(--teal); color:var(--white); font-family:'Heebo',sans-serif; font-weight:700; cursor:pointer; transition:background 0.15s; }
+    .submit-btn { width:100%; padding:0.75rem; background:var(--teal); color:var(--white); border:none; border-radius:8px; font-family:'Heebo',sans-serif; font-size:1rem; font-weight:700; cursor:pointer; transition:background 0.15s; }
     .submit-btn:hover { background:var(--teal-dark); }
 </style>
-<div class="auth-wrap">
+<div class="auth-page">
     <div class="auth-box">
         <div class="auth-card">
-            <img src="/images/logo.png" class="auth-logo" alt="MarketClab" style="filter:sepia(1) hue-rotate(120deg) saturate(0.8);" />
+            <img src="/images/logo-color.png" class="auth-logo" alt="MarketClab" />
             <h1>יצירת חשבון</h1>
-            <p class="auth-sub">הרשמה חינמית — שלם רק כשיוצרים בחן</p>
+            <p class="auth-sub">הרשמה חינמית — שלם רק כשיוצרים בוחן</p>
             @if(ViewBag.Error!=null){<div class="alert alert-error">@ViewBag.Error</div>}
             <form method="post">
                 <div class="form-group"><label>שם מלא</label><input type="text" name="Name" placeholder="ישראל ישראלי" required /></div>

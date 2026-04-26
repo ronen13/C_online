@@ -103,7 +103,7 @@ public class QuizController : Controller
         _db.QuizSessions.Add(session);
         await _db.SaveChangesAsync();
 
-        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        var baseUrl = _config["App:BaseUrl"] ?? $"{Request.Scheme}://{Request.Host}";
         var successUrl = Uri.EscapeDataString($"{baseUrl}/Quiz/PaymentSuccess?sessionId={session.Id}");
         var meshulam = _config["Payment:Url"];
 
