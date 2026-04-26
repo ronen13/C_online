@@ -3,114 +3,173 @@
     Layout = "_Layout";
     ViewData["Title"] = "בחן";
     var answersAt = Model.Session.AnswersAvailableAt;
+    var totalQ = Model.EasyQuestions.Count + Model.MediumQuestions.Count + Model.HardQuestions.Count;
+    const int pageSize = 10;
 }
 <style>
-    .quiz-header { background: var(--green-deep); padding: 2.5rem 1.5rem; color: var(--white); }
-    .quiz-header-inner { max-width: 960px; margin: 0 auto; }
-    .quiz-header h1 { font-size: 1.6rem; font-weight: 900; margin-bottom: 0.3rem; }
-    .quiz-meta { color: #8ecfaa; font-size: 0.82rem; margin-bottom: 1rem; }
-    .topics-tag { display:inline-block; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#d4edda; border-radius:20px; padding:0.2rem 0.7rem; font-size:0.78rem; margin:0.2rem; }
-    .countdown-box { background:rgba(0,0,0,0.25); border:1px solid var(--teal); border-radius:10px; padding:1rem 1.5rem; display:flex; align-items:center; justify-content:space-between; max-width:480px; margin-top:1rem; }
-    .countdown-box .lbl { color:#8ecfaa; font-size:0.82rem; }
-    .countdown-timer { font-size:1.6rem; font-weight:900; color:#4ade80; font-variant-numeric:tabular-nums; }
-    .answers-unlocked { background:rgba(22,163,74,0.2); border:1px solid #16a34a; border-radius:10px; padding:1rem 1.5rem; color:#4ade80; font-weight:700; display:flex; align-items:center; gap:0.5rem; margin-top:1rem; max-width:480px; }
+    .quiz-hero { background:var(--black); padding:2.5rem 1.5rem; border-bottom:1px solid #1f2937; }
+    .quiz-hero-inner { max-width:980px; margin:0 auto; }
+    .quiz-hero h1 { font-size:1.5rem; font-weight:900; color:var(--white); margin-bottom:0.4rem; }
+    .quiz-meta { color:var(--gray-500); font-size:0.8rem; margin-bottom:1rem; display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap; }
+    .meta-sep { color:#374151; }
+    .topic-tag { display:inline-block; background:#1f2937; border:1px solid #374151; color:var(--gray-300); border-radius:20px; padding:0.18rem 0.65rem; font-size:0.75rem; margin:0.15rem; }
+    .countdown-box { display:inline-flex; align-items:center; gap:1.25rem; background:#1f2937; border:1px solid var(--teal); border-radius:10px; padding:0.85rem 1.25rem; margin-top:1rem; }
+    .cd-lbl { font-size:0.75rem; color:var(--gray-500); margin-bottom:0.15rem; }
+    .cd-timer { font-size:1.5rem; font-weight:900; color:var(--teal-light); font-variant-numeric:tabular-nums; }
+    .cd-date { font-size:0.75rem; color:var(--gray-600); line-height:1.5; }
+    .answers-open { display:inline-flex; align-items:center; gap:0.5rem; background:rgba(22,163,74,0.15); border:1px solid #16a34a; border-radius:10px; padding:0.75rem 1.25rem; color:#4ade80; font-weight:700; font-size:0.9rem; margin-top:1rem; }
 
-    .section-title { display:flex; align-items:center; gap:0.75rem; font-size:1.1rem; font-weight:900; margin:2rem 0 1rem; color:var(--green-deep); }
-    .q-card { background:var(--white); border:1px solid var(--border); border-radius:12px; padding:1.5rem; margin-bottom:1rem; }
-    .q-num { font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:0.4rem; }
-    .q-text { font-size:1rem; font-weight:500; margin-bottom:1rem; line-height:1.6; color:var(--text-main); }
+    /* Stats */
+    .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.75rem; }
+    .stat-box { background:var(--white); border:1px solid var(--gray-200); border-radius:10px; padding:1rem 1.25rem; text-align:center; }
+    .stat-num { font-size:2rem; font-weight:900; }
+    .stat-easy   .stat-num { color:#16a34a; }
+    .stat-medium .stat-num { color:#ca8a04; }
+    .stat-hard   .stat-num { color:#dc2626; }
+    .stat-lbl { font-size:0.75rem; color:var(--gray-400); margin-top:0.15rem; }
+
+    /* Tabs */
+    .diff-tabs { display:flex; gap:0; border-bottom:2px solid var(--gray-200); margin-bottom:1.5rem; }
+    .diff-tab {
+        padding:0.7rem 1.4rem; font-size:0.88rem; font-weight:600; cursor:pointer;
+        border:none; background:transparent; color:var(--gray-400);
+        border-bottom:2px solid transparent; margin-bottom:-2px; transition:all 0.15s;
+        font-family:'Heebo',sans-serif;
+    }
+    .diff-tab:hover { color:var(--gray-700); }
+    .diff-tab.active { color:var(--teal); border-bottom-color:var(--teal); }
+    .diff-tab .cnt { font-size:0.72rem; background:var(--gray-100); border-radius:20px; padding:0.1rem 0.5rem; margin-right:0.35rem; }
+    .diff-tab.active .cnt { background:rgba(58,140,126,0.1); color:var(--teal-dark); }
+
+    /* Questions */
+    .q-section { display:none; }
+    .q-section.active { display:block; }
+    .q-card { background:var(--white); border:1px solid var(--gray-200); border-radius:12px; padding:1.5rem; margin-bottom:1rem; transition:border-color 0.15s; }
+    .q-card:hover { border-color:var(--gray-300); }
+    .q-num { font-size:0.72rem; font-weight:700; letter-spacing:0.04em; color:var(--gray-400); margin-bottom:0.5rem; text-transform:uppercase; }
+    .q-text { font-size:0.98rem; font-weight:500; margin-bottom:1.1rem; line-height:1.65; color:var(--gray-900); }
     .options { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; }
-    .option { padding:0.6rem 0.85rem; border-radius:8px; border:1.5px solid var(--border); font-size:0.875rem; display:flex; gap:0.5rem; align-items:flex-start; line-height:1.4; background:var(--bg-light); }
-    .option-key { font-weight:700; min-width:18px; color:var(--text-muted); }
+    .option { padding:0.6rem 0.85rem; border-radius:8px; border:1.5px solid var(--gray-200); font-size:0.85rem; display:flex; gap:0.5rem; align-items:flex-start; background:var(--gray-50); line-height:1.45; }
+    .opt-key { font-weight:700; min-width:18px; color:var(--gray-400); font-size:0.8rem; }
     .option.correct { border-color:#16a34a; background:#f0fdf4; }
-    .option.correct .option-key { color:#16a34a; }
-    .explanation { margin-top:1rem; padding:0.75rem 1rem; background:#e8f5ee; border-right:3px solid var(--teal); border-radius:0 8px 8px 0; font-size:0.875rem; color:var(--green-dark); line-height:1.6; }
-    .locked-msg { background:var(--bg-light); border:1.5px dashed var(--border); border-radius:8px; padding:0.75rem 1rem; font-size:0.8rem; color:var(--text-muted); text-align:center; margin-top:0.75rem; }
+    .option.correct .opt-key { color:#16a34a; }
+    .explanation { margin-top:1rem; padding:0.85rem 1rem 0.85rem 1rem; background:#f0fdf6; border-right:3px solid var(--teal); border-radius:0 8px 8px 0; font-size:0.85rem; color:var(--gray-700); line-height:1.65; }
+    .locked-msg { margin-top:0.75rem; background:var(--gray-50); border:1.5px dashed var(--gray-300); border-radius:8px; padding:0.7rem 1rem; font-size:0.8rem; color:var(--gray-400); text-align:center; }
+
+    /* Pagination */
+    .pagination { display:flex; align-items:center; justify-content:center; gap:0.35rem; margin:1.5rem 0; flex-wrap:wrap; }
+    .pg-btn { padding:0.4rem 0.75rem; border-radius:6px; border:1px solid var(--gray-200); background:var(--white); color:var(--gray-600); cursor:pointer; font-size:0.82rem; font-family:'Heebo',sans-serif; transition:all 0.12s; }
+    .pg-btn:hover { border-color:var(--teal); color:var(--teal); }
+    .pg-btn.active { background:var(--teal); color:var(--white); border-color:var(--teal); }
+    .pg-btn:disabled { opacity:0.35; cursor:not-allowed; }
 </style>
 
-<div class="quiz-header">
-    <div class="quiz-header-inner">
-        <h1>📝 @(Model.Session.Topics.Length > 60 ? Model.Session.Topics[..60] + "..." : Model.Session.Topics)</h1>
+<div class="quiz-hero">
+    <div class="quiz-hero-inner">
+        <h1>📝 @(Model.Session.Topics.Length > 65 ? Model.Session.Topics[..65] + "…" : Model.Session.Topics)</h1>
         <div class="quiz-meta">
-            נוצר: @Model.Session.CreatedAt.ToString("dd/MM/yyyy HH:mm") ·
-            @(Model.EasyQuestions.Count + Model.MediumQuestions.Count + Model.HardQuestions.Count) שאלות
+            <span>@Model.Session.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+            <span class="meta-sep">·</span>
+            <span>@totalQ שאלות</span>
+            @if(Model.Session.PaymentReference != null){
+                <span class="meta-sep">·</span>
+                <span>@Model.Session.PaymentReference</span>
+            }
         </div>
         <div>
-            @foreach (var t in Model.Session.Topics.Split(','))
-            { <span class="topics-tag">@t.Trim()</span> }
+            @foreach(var t in Model.Session.Topics.Split(','))
+            { <span class="topic-tag">@t.Trim()</span> }
         </div>
-        @if (Model.AnswersAvailable)
-        {
-            <div class="answers-unlocked">✅ התשובות פתוחות — ניתן לראות את כל התשובות וההסברים</div>
-        }
-        else if (answersAt.HasValue)
-        {
+        @if(Model.AnswersAvailable){
+            <div class="answers-open">✅ התשובות פתוחות — כל התשובות וההסברים זמינים</div>
+        } else if(answersAt.HasValue){
             <div class="countdown-box">
                 <div>
-                    <div class="lbl">התשובות ייפתחו בעוד</div>
-                    <div class="countdown-timer" id="timer">--:--:--</div>
+                    <div class="cd-lbl">התשובות ייפתחו בעוד</div>
+                    <div class="cd-timer" id="timer">--:--:--</div>
                 </div>
-                <div style="font-size:0.8rem;color:#6b9;max-width:160px;line-height:1.5">
-                    @answersAt.Value.ToString("dd/MM/yyyy")<br>בשעה @answersAt.Value.ToString("HH:mm")
-                </div>
+                <div class="cd-date">@answersAt.Value.ToString("dd/MM/yyyy")<br>בשעה @answersAt.Value.ToString("HH:mm")</div>
             </div>
         }
     </div>
 </div>
 
 <div class="container">
+    <div class="stats-row">
+        <div class="stat-box stat-easy"><div class="stat-num">@Model.EasyQuestions.Count</div><div class="stat-lbl">🟢 קל</div></div>
+        <div class="stat-box stat-medium"><div class="stat-num">@Model.MediumQuestions.Count</div><div class="stat-lbl">🟡 בינוני</div></div>
+        <div class="stat-box stat-hard"><div class="stat-num">@Model.HardQuestions.Count</div><div class="stat-lbl">🔴 קשה</div></div>
+    </div>
+
+    <div class="diff-tabs">
+        <button class="diff-tab active" onclick="switchTab('easy',this)">🟢 קל <span class="cnt">@Model.EasyQuestions.Count</span></button>
+        <button class="diff-tab" onclick="switchTab('medium',this)">🟡 בינוני <span class="cnt">@Model.MediumQuestions.Count</span></button>
+        <button class="diff-tab" onclick="switchTab('hard',this)">🔴 קשה <span class="cnt">@Model.HardQuestions.Count</span></button>
+    </div>
+
     @{
-        var sections = new (string Label, List<QuizSystem.Models.Question> Questions, string Emoji, string Css)[]
+        var sections = new(string Id, List<QuizSystem.Models.Question> Qs)[]
         {
-            ("קל",     Model.EasyQuestions,   "🟢", "easy"),
-            ("בינוני", Model.MediumQuestions, "🟡", "medium"),
-            ("קשה",    Model.HardQuestions,   "🔴", "hard")
+            ("easy",   Model.EasyQuestions),
+            ("medium", Model.MediumQuestions),
+            ("hard",   Model.HardQuestions)
         };
     }
-    @foreach (var sec in sections)
-    {
-        <div class="section-title">
-            @sec.Emoji <span>שאלות @sec.Label</span>
-            <span class="badge badge-@sec.Css">@sec.Questions.Count שאלות</span>
-        </div>
 
-        @for (int i = 0; i < sec.Questions.Count; i++)
-        {
-            var q = sec.Questions[i];
-            <div class="q-card">
-                <div class="q-num">שאלה @(i+1) · @q.Topic</div>
-                <div class="q-text">@q.Text</div>
-                <div class="options">
-                    @foreach (var opt in new[]{("A",q.OptionA),("B",q.OptionB),("C",q.OptionC),("D",q.OptionD)})
+    @foreach(var sec in sections)
+    {
+        int pages = (int)Math.Ceiling((double)sec.Qs.Count / pageSize);
+        <div class="q-section @(sec.Id=="easy"?"active":"")" id="section-@sec.Id">
+            @for(int p = 0; p < pages; p++)
+            {
+                var pq = sec.Qs.Skip(p*pageSize).Take(pageSize).ToList();
+                <div class="page-content" id="page-@(sec.Id)-@p" style="display:@(p==0?"block":"none")">
+                    @for(int i = 0; i < pq.Count; i++)
                     {
-                        var isOk = Model.AnswersAvailable && q.CorrectAnswer == opt.Item1;
-                        <div class="option @(isOk?"correct":"")">
-                            <span class="option-key">@opt.Item1.</span>
-                            <span>@opt.Item2</span>
+                        var q = pq[i];
+                        int gi = p*pageSize+i+1;
+                        <div class="q-card">
+                            <div class="q-num">שאלה @gi מתוך @sec.Qs.Count &nbsp;·&nbsp; @q.Topic</div>
+                            <div class="q-text">@q.Text</div>
+                            <div class="options">
+                                @foreach(var o in new[]{("A",q.OptionA),("B",q.OptionB),("C",q.OptionC),("D",q.OptionD)})
+                                {
+                                    <div class="option @(Model.AnswersAvailable&&q.CorrectAnswer==o.Item1?"correct":"")">
+                                        <span class="opt-key">@o.Item1.</span><span>@o.Item2</span>
+                                    </div>
+                                }
+                            </div>
+                            @if(Model.AnswersAvailable)
+                            { <div class="explanation">💡 @q.Explanation</div> }
+                            else
+                            { <div class="locked-msg">🔒 התשובה וההסבר ייפתחו לאחר 48 שעות</div> }
                         </div>
                     }
                 </div>
-                @if (Model.AnswersAvailable)
-                { <div class="explanation">💡 @q.Explanation</div> }
-                else
-                { <div class="locked-msg">🔒 התשובה וההסבר ייפתחו לאחר 48 שעות מרגע הרישום</div> }
-            </div>
-        }
+            }
+            @if(pages > 1){
+                <div class="pagination" id="pag-@sec.Id">
+                    <button class="pg-btn" onclick="prevPg('@sec.Id')">→ הקודם</button>
+                    @for(int p=0;p<pages;p++){ <button class="pg-btn @(p==0?"active":"")" onclick="goPg('@sec.Id',@p,this)" id="pb-@(sec.Id)-@p">@(p+1)</button> }
+                    <button class="pg-btn" onclick="nextPg('@sec.Id',@pages)">הבא ←</button>
+                </div>
+            }
+        </div>
     }
 </div>
 
-@if (!Model.AnswersAvailable && answersAt.HasValue)
-{
+<script>
+var cur={easy:0,medium:0,hard:0};
+function switchTab(id,el){document.querySelectorAll('.q-section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.diff-tab').forEach(t=>t.classList.remove('active'));document.getElementById('section-'+id).classList.add('active');el.classList.add('active');}
+function goPg(s,p,btn){var o=cur[s];document.getElementById('page-'+s+'-'+o).style.display='none';document.getElementById('pb-'+s+'-'+o).classList.remove('active');document.getElementById('page-'+s+'-'+p).style.display='block';if(btn)btn.classList.add('active');cur[s]=p;window.scrollTo({top:0,behavior:'smooth'});}
+function prevPg(s){if(cur[s]>0)goPg(s,cur[s]-1,document.getElementById('pb-'+s+'-'+(cur[s]-1)));}
+function nextPg(s,t){if(cur[s]<t-1)goPg(s,cur[s]+1,document.getElementById('pb-'+s+'-'+(cur[s]+1)));}
+@if(!Model.AnswersAvailable && answersAt.HasValue){
     var iso = answersAt.Value.ToString("o");
-    <script>
-        var target = new Date('@iso');
-        function tick() {
-            var d = target - new Date();
-            if (d <= 0) { location.reload(); return; }
-            var h = Math.floor(d/3600000), m = Math.floor((d%3600000)/60000), s = Math.floor((d%60000)/1000);
-            document.getElementById('timer').textContent =
-                String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-        }
-        tick(); setInterval(tick,1000);
-    </script>
+    <text>
+var tgt=new Date('@iso');
+function tick(){var d=tgt-new Date();if(d<=0){location.reload();return;}var h=Math.floor(d/3600000),m=Math.floor((d%3600000)/60000),s=Math.floor((d%60000)/1000);document.getElementById('timer').textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
+tick();setInterval(tick,1000);
+    </text>
 }
+</script>

@@ -10,6 +10,14 @@ public class QuestionGeneratorService
     private readonly ILogger<QuestionGeneratorService> _logger;
     private readonly HttpClient _httpClient;
 
+    // Total 100 questions: 34 easy + 33 medium + 33 hard
+    private const int EasyCount   = 34;
+    private const int MediumCount = 33;
+    private const int HardCount   = 33;
+
+    // API limit per single call — split into batches to avoid token limits
+    private const int BatchSize = 10;
+
     public QuestionGeneratorService(IConfiguration config, ILogger<QuestionGeneratorService> logger, HttpClient httpClient)
     {
         _config = config;
@@ -19,164 +27,219 @@ public class QuestionGeneratorService
 
     public async Task<List<Question>> GenerateQuestionsAsync(string topics, int sessionId, int countPerDifficulty = 5)
     {
-        var questions = new List<Question>();
+        // countPerDifficulty param ignored — we use fixed 100-question split
+        var all = new List<Question>();
         var topicList = topics.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        var difficulties = new[] { "easy", "medium", "hard" };
 
-        foreach (var difficulty in difficulties)
+        var plan = new[]
         {
-            var prompt = BuildPrompt(topicList, difficulty, countPerDifficulty);
-            var generated = await CallApiAsync(prompt, topics, difficulty, sessionId, countPerDifficulty);
-            questions.AddRange(generated);
+            ("easy",   EasyCount),
+            ("medium", MediumCount),
+            ("hard",   HardCount)
+        };
+
+        foreach (var (diff, total) in plan)
+        {
+            var generated = await GenerateForDifficulty(topicList, diff, total, sessionId);
+            all.AddRange(generated);
+            _logger.LogInformation("[Quiz] Session {Id}: {Count} {Diff} questions ready", sessionId, generated.Count, diff);
         }
 
-        return questions;
+        return all;
     }
 
-    private string BuildPrompt(string[] topics, string difficulty, int count)
+    private async Task<List<Question>> GenerateForDifficulty(string[] topics, string difficulty, int total, int sessionId)
     {
-        var difficultyHe = difficulty switch
+        var apiKey = _config["Claude:ApiKey"];
+        if (string.IsNullOrEmpty(apiKey))
         {
-            "easy"   => "קלות (מתאים למתחילים, מושגים בסיסיים ב-C#)",
-            "medium" => "בינוניות (מצריכות הבנה ויישום של C#)",
-            "hard"   => "קשות (מצריכות ניתוח עמוק, חשיבה ביקורתית ו-best practices)",
+            _logger.LogWarning("API key missing — using mock questions");
+            return GenerateMockQuestions(topics, difficulty, sessionId, total);
+        }
+
+        var result = new List<Question>();
+        int batches = (int)Math.Ceiling((double)total / BatchSize);
+
+        for (int b = 0; b < batches; b++)
+        {
+            int batchCount = (b == batches - 1) ? total - result.Count : BatchSize;
+            int attempt = 0;
+
+            while (attempt < 3 && batchCount > 0)
+            {
+                try
+                {
+                    var prompt = BuildPrompt(topics, difficulty, batchCount, b + 1, batches);
+                    var batch = await CallApiAsync(prompt, topics, difficulty, sessionId);
+                    result.AddRange(batch);
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    attempt++;
+                    _logger.LogWarning(ex, "Batch {B} attempt {A} failed for {Diff}", b, attempt, difficulty);
+                    await Task.Delay(1500 * attempt);
+                }
+            }
+
+            // Small delay between batches to respect rate limits
+            if (b < batches - 1) await Task.Delay(500);
+        }
+
+        // Fallback if API returned fewer than expected
+        if (result.Count < total)
+        {
+            var missing = total - result.Count;
+            result.AddRange(GenerateMockQuestions(topics, difficulty, sessionId, missing));
+        }
+
+        return result;
+    }
+
+    private string BuildPrompt(string[] topics, string difficulty, int count, int batch, int totalBatches)
+    {
+        var diffHe = difficulty switch
+        {
+            "easy"   => "קלות (מושגים בסיסיים ב-C#, מתאים למתחילים)",
+            "medium" => "בינוניות (הבנה ויישום של C#, דורשות חשיבה)",
+            "hard"   => "קשות (ניתוח, best practices, edge cases ב-C#)",
             _        => difficulty
         };
 
-        return $@"אתה מומחה ב-C# ו-.NET. צור {count} שאלות אמריקאיות {difficultyHe} על הנושאים הבאים: {string.Join(", ", topics)}.
+        return $@"אתה מומחה C# ו-.NET. צור בדיוק {count} שאלות אמריקאיות {diffHe} על: {string.Join(", ", topics)}.
+זוהי קבוצה {batch} מתוך {totalBatches} — אל תחזור על שאלות מקבוצות קודמות.
 
-החזר תשובה בפורמט JSON בלבד (ללא טקסט נוסף, ללא markdown):
+החזר JSON בלבד, ללא markdown, ללא טקסט נוסף:
 {{
   ""questions"": [
     {{
-      ""topic"": ""שם הנושא"",
-      ""text"": ""טקסט השאלה"",
-      ""optionA"": ""אפשרות א'"",
-      ""optionB"": ""אפשרות ב'"",
-      ""optionC"": ""אפשרות ג'"",
-      ""optionD"": ""אפשרות ד'"",
-      ""correctAnswer"": ""A"",
-      ""explanation"": ""הסבר מפורט על התשובה הנכונה ועל העיקרון ב-C#""
+      ""topic"": ""שם הנושא הספציפי"",
+      ""text"": ""טקסט השאלה (כולל קטע קוד אם רלוונטי)"",
+      ""optionA"": ""..."",
+      ""optionB"": ""..."",
+      ""optionC"": ""..."",
+      ""optionD"": ""..."",
+      ""correctAnswer"": ""A|B|C|D"",
+      ""explanation"": ""הסבר מפורט מדוע זו התשובה הנכונה""
     }}
   ]
 }}
 
-חוקים:
-- כתוב הכל בעברית (מלבד מונחי קוד כגון: null, async, IEnumerable וכו')
-- הכנס קטעי קוד C# קצרים בשאלות כשרלוונטי
-- התשובות הנכונות יהיו מגוונות (לא תמיד A)
-- אל תחזור על שאלות דומות
-- ההסבר יסביר את העיקרון הנכון ב-C#";
+כללים:
+- עברית מלאה (מלבד מונחי קוד: null, async, IEnumerable וכו')
+- הכנס snippets קצרים של C# בשאלות כשרלוונטי
+- פזר את התשובות הנכונות בין A/B/C/D באופן שווה
+- כל שאלה על נושא שונה מהקבוצה";
     }
 
-    private async Task<List<Question>> CallApiAsync(string prompt, string topics, string difficulty, int sessionId, int count)
+    private async Task<List<Question>> CallApiAsync(string prompt, string[] topics, string difficulty, int sessionId)
     {
-        var questions = new List<Question>();
-        try
+        _httpClient.DefaultRequestHeaders.Clear();
+        _httpClient.DefaultRequestHeaders.Add("x-api-key", _config["Claude:ApiKey"]);
+        _httpClient.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01");
+
+        var body = new
         {
-            var apiKey = _config["Claude:ApiKey"];
-            if (string.IsNullOrEmpty(apiKey))
-            {
-                _logger.LogWarning("API key not configured, using mock data");
-                return GenerateMockQuestions(topics, difficulty, sessionId, count);
-            }
+            model = "claude-opus-4-5",
+            max_tokens = 4096,
+            messages = new[] { new { role = "user", content = prompt } }
+        };
 
-            _httpClient.DefaultRequestHeaders.Clear();
-            _httpClient.DefaultRequestHeaders.Add("x-api-key", apiKey);
-            _httpClient.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01");
+        var response = await _httpClient.PostAsync(
+            "https://api.anthropic.com/v1/messages",
+            new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json")
+        );
 
-            var requestBody = new
-            {
-                model = "claude-opus-4-5",
-                max_tokens = 4000,
-                messages = new[] { new { role = "user", content = prompt } }
-            };
+        response.EnsureSuccessStatusCode();
+        var text = await response.Content.ReadAsStringAsync();
+        var parsed = JsonDocument.Parse(text);
+        var content = parsed.RootElement.GetProperty("content")[0].GetProperty("text").GetString() ?? "";
 
-            var response = await _httpClient.PostAsync(
-                "https://api.anthropic.com/v1/messages",
-                new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json")
-            );
+        var start = content.IndexOf('{');
+        var end   = content.LastIndexOf('}') + 1;
+        if (start < 0 || end <= start) throw new Exception("No JSON in response");
 
-            var responseText = await response.Content.ReadAsStringAsync();
-            var parsed = JsonDocument.Parse(responseText);
-            var content = parsed.RootElement.GetProperty("content")[0].GetProperty("text").GetString() ?? "";
+        var result = JsonDocument.Parse(content[start..end]);
+        var list   = new List<Question>();
 
-            var jsonStart = content.IndexOf('{');
-            var jsonEnd   = content.LastIndexOf('}') + 1;
-            if (jsonStart >= 0 && jsonEnd > jsonStart)
-            {
-                var result = JsonDocument.Parse(content[jsonStart..jsonEnd]);
-                foreach (var q in result.RootElement.GetProperty("questions").EnumerateArray())
-                {
-                    questions.Add(new Question
-                    {
-                        SessionId     = sessionId,
-                        Topic         = q.GetProperty("topic").GetString() ?? topics,
-                        Difficulty    = difficulty,
-                        Text          = q.GetProperty("text").GetString() ?? "",
-                        OptionA       = q.GetProperty("optionA").GetString() ?? "",
-                        OptionB       = q.GetProperty("optionB").GetString() ?? "",
-                        OptionC       = q.GetProperty("optionC").GetString() ?? "",
-                        OptionD       = q.GetProperty("optionD").GetString() ?? "",
-                        CorrectAnswer = q.GetProperty("correctAnswer").GetString() ?? "A",
-                        Explanation   = q.GetProperty("explanation").GetString() ?? ""
-                    });
-                }
-            }
-        }
-        catch (Exception ex)
+        foreach (var q in result.RootElement.GetProperty("questions").EnumerateArray())
         {
-            _logger.LogError(ex, "Error generating questions, using mock data");
-            return GenerateMockQuestions(topics, difficulty, sessionId, count);
+            list.Add(new Question
+            {
+                SessionId     = sessionId,
+                Topic         = q.GetProperty("topic").GetString() ?? topics[0],
+                Difficulty    = difficulty,
+                Text          = q.GetProperty("text").GetString() ?? "",
+                OptionA       = q.GetProperty("optionA").GetString() ?? "",
+                OptionB       = q.GetProperty("optionB").GetString() ?? "",
+                OptionC       = q.GetProperty("optionC").GetString() ?? "",
+                OptionD       = q.GetProperty("optionD").GetString() ?? "",
+                CorrectAnswer = q.GetProperty("correctAnswer").GetString() ?? "A",
+                Explanation   = q.GetProperty("explanation").GetString() ?? ""
+            });
         }
-        return questions;
+
+        return list;
     }
 
-    private List<Question> GenerateMockQuestions(string topics, string difficulty, int sessionId, int count)
+    private List<Question> GenerateMockQuestions(string[] topics, string difficulty, int sessionId, int count)
     {
-        var questions = new List<Question>();
-        var topicList = topics.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-        // Real C# sample questions per difficulty
         var samples = difficulty switch
         {
             "easy" => new[]
             {
-                ("מהי המילה השמורה להגדרת מחלקה ב-C#?", "class", "struct", "object", "type", "A", "ב-C# משתמשים במילה `class` להגדרת מחלאה. `struct` משמש לסוגי ערך, `object` הוא מחלקת הבסיס."),
-                ("מה יודפס? `Console.WriteLine(10 / 3);`", "3", "3.33", "3.0", "שגיאה", "A", "חלוקת int ב-int ב-C# מחזירה int — החלק השלם בלבד. לקבלת 3.33 יש לכתוב `10.0 / 3`."),
-                ("איזו מילה שמורה מגדירה קבוע ב-C#?", "const", "readonly", "fixed", "static", "A", "`const` מגדיר ערך קבוע בזמן קומפילציה. `readonly` מאפשר השמה פעם אחת בזמן ריצה."),
-                ("מה הטיפוס המוחזר של `bool` ב-C#?", "true/false", "0/1", "yes/no", "on/off", "A", "`bool` מחזיר `true` או `false` בלבד."),
-                ("כיצד מגדירים מערך של int ב-C#?", "int[] arr", "int arr[]", "array<int>", "List<int>", "A", "התחביר הנכון ב-C# הוא `int[] arr = new int[5];`.")
+                ("יסודות C#",    "מה המילה השמורה ליצירת מחלקה?",                                  "class","struct","object","interface","A","ב-C# מגדירים מחלאה עם class. struct הוא סוג-ערך."),
+                ("יסודות C#",    "מה הפלט של Console.WriteLine(10 / 3)?",                          "3","3.33","3.0","שגיאה","A","חלוקת int ב-int מחזירה int — החלק השלם."),
+                ("טיפוסים",      "מה הגודל של int ב-C#?",                                          "32 bit","16 bit","64 bit","תלוי במערכת","A","int הוא System.Int32 — תמיד 32 ביט ב-C#."),
+                ("מחרוזות",      "איך בודקים אם string ריק?",                                      "string.IsNullOrEmpty(s)","s == null","s.Length","s.Empty","A","IsNullOrEmpty בודק גם null וגם ריק."),
+                ("OOP",          "מה Encapsulation?",                                               "הסתרת פרטים פנימיים","ירושה","polymorphism","interface","A","הסתרת המימוש וחשיפת API בלבד."),
+                ("לולאות",       "מה ההבדל בין for ל-foreach?",                                    "foreach מיועד לאוספים","for מהיר יותר תמיד","אין הבדל","foreach לא עובד על מערכים","A","foreach מיועד לריצה על IEnumerable."),
+                ("Collections",  "מה ההבדל בין List<T> למערך?",                                   "List גמיש בגודל","מערך מהיר יותר תמיד","אין הבדל","List לא ניתן להרחבה","A","List<T> מגדיל את עצמו דינמית."),
+                ("Nullable",     "מה הסימון לטיפוס nullable?",                                     "int?","int!","null<int>","nullable int","A","int? = Nullable<int> — מאפשר null."),
+                ("Exception",    "מה יוצר try-catch?",                                             "תפיסת שגיאות","לולאה","interface","thread","A","try-catch תופס exceptions בזמן ריצה."),
+                ("const",        "מה ההבדל בין const ל-readonly?",                                 "const בזמן קומפילציה, readonly בזמן ריצה","אין הבדל","readonly מהיר יותר","const ניתן לשינוי","A","const חייב להיות ידוע בקומפילציה.")
             },
             "medium" => new[]
             {
-                ("מה ההבדל בין `IEnumerable<T>` ל-`IList<T>`?", "IList מאפשר גישה לפי אינדקס", "IEnumerable מהיר יותר", "IList לקריאה בלבד", "אין הבדל", "A", "`IList<T>` מרחיב את `ICollection<T>` ומאפשר גישה לפי אינדקס (`list[0]`). `IEnumerable<T>` מאפשר ריצה קדימה בלבד."),
-                ("מה עושה `yield return` ב-C#?", "מחזיר ערך בלי לסיים את המתודה", "זורק exception", "יוצא מהלולאה", "מחזיר null", "A", "`yield return` יוצר iterator — הפונקציה מחזירה ערך ומשהה את עצמה עד הקריאה הבאה."),
-                ("מה יקרה אם תקרא למתודה `async` בלי `await`?", "תחזיר Task ללא המתנה", "תזרוק exception", "תחסום את ה-thread", "לא תקמפל", "A", "קריאה ל-`async` בלי `await` תחזיר `Task` מיידית — הקוד ירוץ ברקע ללא המתנה לתוצאה."),
-                ("מה ההבדל בין `==` ל-`Equals()` ב-C#?", "`==` משווה reference, `Equals` משווה ערך (לרוב)", "`Equals` מהיר יותר", "אין הבדל", "`==` לא עובד על objects", "A", "עבור `string`, `==` עובד על ערכים. עבור מחלקות מותאמות אישית, `==` משווה reference אלא אם override בוצע."),
-                ("מה עושה LINQ `Where`?", "מסנן אלמנטים לפי תנאי", "ממיין את האוסף", "מחזיר את הראשון", "מבצע group", "A", "`Where` מסנן את האוסף ומחזיר `IEnumerable<T>` עם האלמנטים שעומדים בתנאי.")
+                ("LINQ",         "מה ההבדל בין Where ל-First?",                                    "Where מחזיר IEnumerable, First מחזיר אלמנט","אין הבדל","First מסנן","Where מחזיר null","A","First זורק exception אם ריק."),
+                ("async/await",  "מה הבעיה ב-async void?",                                        "Exceptions לא נתפסות","לא יקמפל","חוסם UI","לא מאפשר await","A","יש להשתמש ב-async Task."),
+                ("OOP",          "מה abstract class לעומת interface?",                             "Abstract יכול להכיל מימוש","אין הבדל","Interface יכול להכיל שדות","Abstract לא ניתן לירושה","A","Interface (לפני C#8) רק חתימות."),
+                ("Generics",     "מה where T : class מגביל?",                                     "T חייב להיות reference type","T חייב להיות struct","T חייב להכיל constructor","T חייב להיות public","A","מגביל ל-reference types בלבד."),
+                ("Delegates",    "מה Func<int, string>?",                                          "Delegate שמקבל int ומחזיר string","Delegate ללא פרמטרים","Action עם string","Generic method","A","הפרמטר האחרון ב-Func הוא סוג ההחזרה."),
+                ("IEnumerable",  "מה yield return עושה?",                                         "מחזיר ערך ומשהה","יוצא מהפונקציה","זורק exception","מחזיר null","A","יוצר iterator — הפונקציה ממשיכה בקריאה הבאה."),
+                ("EF Core",      "מה ההבדל בין Add ל-Attach?",                                    "Add=Added, Attach=Unchanged","אין הבדל","Attach זורק exception","Add מבצע INSERT מיד","A","Attach לא יייצר INSERT אלא אם תשנה מאפיין."),
+                ("Extensions",   "מה Extension Method?",                                           "מתודה שנוספת לטיפוס קיים","מתודה סטטית פרטית","override של מתודה","virtual method","A","מוגדר כ-static עם this כפרמטר ראשון."),
+                ("Pattern",      "מה switch expression ב-C# 8?",                                  "ביטוי switch שמחזיר ערך","לולאת switch","switch עם regex","switch לטיפוסים בלבד","A","תחביר קומפקטי: x switch { pattern => result }."),
+                ("Tasks",        "מה Task.WhenAll עושה?",                                         "ממתין לכל ה-Tasks במקביל","מריץ Tasks ברצף","מבטל Tasks","מחזיר את הראשון","A","כל ה-Tasks רצים במקביל, ממתין עד שכולם מסיימים.")
             },
             _ => new[]
             {
-                ("מה הבעיה בקוד הבא? `async void MyMethod() { await Task.Delay(1000); }`", "לא ניתן לתפוס exceptions", "לא יקמפל", "יחסום את ה-UI", "לא תהיה בעיה", "A", "`async void` מסוכן כי exceptions שנזרקות בו לא ניתנות לתפיסה מחוץ למתודה. יש להשתמש ב-`async Task`."),
-                ("מה Contravariance ב-Generics?", "מאפשר שימוש ב-base type במקום derived", "מאפשר המרה אוטומטית", "מונע boxing", "משפר ביצועים", "A", "Contravariance (עם `in`) מאפשר להשתמש ב-`Action<Base>` במקום `Action<Derived>` — הכיוון ההפוך מ-covariance."),
-                ("מה הפלט? `Span<int> s = stackalloc int[3]; s[0]=1; Console.Write(s.Length);`", "3", "שגיאת קומפילציה", "0", "undefined", "A", "`stackalloc` מקצה זיכרון על ה-stack. `Span<T>` עוטף אותו. `.Length` מחזיר 3."),
-                ("מהו Double-checked locking pattern?", "בדיקת תנאי פעמיים סביב lock לביצועים", "נעילה כפולה לאבטחה", "Pattern ל-async locks", "Anti-pattern תמיד", "A", "בודק תנאי לפני ואחרי `lock` — מונע overhead של lock כשהסינגלטון כבר אותחל, תוך שמירת thread safety."),
-                ("מה IAsyncDisposable מאפשר?", "async cleanup ב-`await using`", "ביטול Tasks", "async constructors", "thread-safe dispose", "A", "`IAsyncDisposable` + `await using` מאפשר ניקוי משאבים async — למשל סגירת connections ב-async.")
+                ("async",        "מה ConfigureAwait(false) עושה?",                                "ממשיך ב-thread שרירותי","מבטל await","מוסיף timeout","חוזר ל-UI thread","A","מונע חזרה ל-SynchronizationContext המקורי — חשוב בספריות."),
+                ("Memory",       "מה Span<T>?",                                                   "מבט על זיכרון רציף ללא הקצאה","Generic collection","pointer ל-unmanaged","thread-safe buffer","A","Span<T> על ה-stack — אפס allocations."),
+                ("Concurrency",  "מה Double-checked locking?",                                    "בדיקת null לפני ואחרי lock","נעילה כפולה","async lock","anti-pattern","A","מונע overhead של lock כשהסינגלטון אותחל."),
+                ("IQueryable",   "מה ההבדל בין IQueryable ל-IEnumerable ב-DB?",                  "IQueryable מתרגם ל-SQL","IEnumerable מהיר יותר","אין הבדל","IQueryable עובד בזיכרון","A","IQueryable מסנן בשרת, IEnumerable מביא הכל לזיכרון."),
+                ("Contravariance","מה in T ב-Generics?",                                          "Contravariance — מאפשר שימוש ב-base type","Covariance","sealed generic","readonly generic","A","Action<Base> ניתן להשמה ל-Action<Derived>."),
+                ("Dispose",      "מה IAsyncDisposable?",                                          "async cleanup עם await using","sync dispose","thread-safe dispose","cancel disposal","A","await using מאפשר ניקוי משאבים async."),
+                ("Records",      "מה record ב-C# 9?",                                             "immutable reference type עם value equality","mutable class","struct מיוחד","interface","A","Records משווים לפי ערכים, לא reference."),
+                ("Source Gen",   "מה Source Generators ב-C#?",                                   "קוד שנוצר בזמן קומפילציה","runtime code gen","reflection","AOP","A","מייצרים קוד C# אוטומטית בזמן build ללא runtime overhead."),
+                ("Channels",     "מה System.Threading.Channels?",                                 "תור producer-consumer thread-safe","lock wrapper","async mutex","event aggregator","A","מחליף תבניות BlockingCollection בעולם async."),
+                ("Expressions",  "מה Expression<Func<T>> לעומת Func<T>?",                       "Expression שומר את עץ הביטוי לניתוח","אין הבדל","Expression מהיר יותר","Expression לא ניתן להרצה","A","LINQ to SQL משתמש בזה לתרגום ל-SQL.")
             }
         };
 
-        var topicArr = topicList.ToArray();
-        for (int i = 0; i < Math.Min(count, samples.Length); i++)
+        var result = new List<Question>();
+        for (int i = 0; i < count; i++)
         {
-            var s = samples[i];
-            questions.Add(new Question
+            var s = samples[i % samples.Length];
+            var topicName = s.Item1.Length > 0 ? s.Item1 : topics[i % topics.Length];
+            result.Add(new Question
             {
-                SessionId = sessionId, Topic = topicArr[i % topicArr.Length], Difficulty = difficulty,
-                Text = s.Item1, OptionA = s.Item2, OptionB = s.Item3, OptionC = s.Item4, OptionD = s.Item5,
-                CorrectAnswer = s.Item6, Explanation = s.Item7
+                SessionId = sessionId, Topic = topicName, Difficulty = difficulty,
+                Text = s.Item2, OptionA = s.Item3, OptionB = s.Item4,
+                OptionC = s.Item5, OptionD = s.Item6,
+                CorrectAnswer = s.Item7, Explanation = s.Item8
             });
         }
-        return questions;
+        return result;
     }
 }
